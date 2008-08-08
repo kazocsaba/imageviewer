@@ -47,6 +47,7 @@ public class ImageViewerUtil {
 		if (v1==v2) return;
 		v1.getScrollPane().getHorizontalScrollBar().setModel(v2.getScrollPane().getHorizontalScrollBar().getModel());
 		v1.getScrollPane().getVerticalScrollBar().setModel(v2.getScrollPane().getVerticalScrollBar().getModel());
+		v1.trackSizeIfEmpty(v2);
 		new PropertySynchronizer(v1, v2);
 	}
 }

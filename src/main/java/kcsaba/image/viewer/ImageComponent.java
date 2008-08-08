@@ -12,7 +12,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.MouseInputListener;
 
@@ -26,6 +28,11 @@ class ImageComponent extends JComponent {
 	private final List<ImageMouseMoveListener> moveListeners = new ArrayList<ImageMouseMoveListener>(4);
 	private final List<ImageMouseClickListener> clickListeners = new ArrayList<ImageMouseClickListener>(4);
 	private final MouseEventTranslator mouseEventTranslator = new MouseEventTranslator();
+	/**
+	 * This set is shared by all synchronized image components and contains all
+	 * synchronized image components. Unless there is no synchronization; then it is null.
+	 */
+	private Set<ImageComponent> trackSizeIfEmpty = null;
 	
 	private final PropertyChangeSupport propertyChangeSupport;
 
@@ -82,10 +89,44 @@ class ImageComponent extends JComponent {
 	
 	@Override
 	public Dimension getPreferredSize() {
-		if (image == null)
+		if (image == null) {
+			if (trackSizeIfEmpty!=null)
+				for (ImageComponent c:trackSizeIfEmpty)
+					if (c.getImage()!=null)
+						return new Dimension(c.getImage().getWidth(), c.getImage().getHeight());
 			return new Dimension();
-		else 
+		} else
 			return new Dimension(image.getWidth(), image.getHeight());
+	}
+	/**
+	 * Adds a component to the trackSizeIfEmpty set. If this component has no image set
+	 * but one of the tracked ones does, then the size of this component will be set to
+	 * match the size of the image displayed in one of the tracked components. This
+	 * method is useful if the scroll bars of image viewers are synchronized, because
+	 * if a viewer has no image set, it can cause the scrolling of a viewer that has an
+	 * image set not to work.
+	 * @param c the component to track
+	 */
+	public void trackSizeIfEmpty(ImageComponent c) {
+		if (trackSizeIfEmpty!=null) {
+			if (c.trackSizeIfEmpty!=null) {
+				trackSizeIfEmpty.addAll(c.trackSizeIfEmpty);
+				c.trackSizeIfEmpty=trackSizeIfEmpty;
+			} else {
+				trackSizeIfEmpty.add(c);
+				c.trackSizeIfEmpty=trackSizeIfEmpty;
+			}
+		} else {
+			if (c.trackSizeIfEmpty!=null) {
+				c.trackSizeIfEmpty.add(this);
+				trackSizeIfEmpty=c.trackSizeIfEmpty;
+			} else {
+				trackSizeIfEmpty=new HashSet<ImageComponent>(4);
+				trackSizeIfEmpty.add(this);
+				trackSizeIfEmpty.add(c);
+				c.trackSizeIfEmpty=trackSizeIfEmpty;
+			}
+		}
 	}
 
 	/**

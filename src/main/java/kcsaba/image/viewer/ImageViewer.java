@@ -301,4 +301,18 @@ public class ImageViewer {
 	JScrollPane getScrollPane() {
 		return scroller;
 	}
+	/**
+	 * Adds a component to the trackSizeIfEmpty set. If this component has no image set
+	 * but one of the tracked ones does, then the size of this component will be set to
+	 * match the size of the image displayed in one of the tracked components. This
+	 * method is useful if the scroll bars of image viewers are synchronized, because
+	 * if a viewer has no image set, it can cause the scrolling of a viewer that has an
+	 * image set not to work.
+	 * <p>
+	 * Tracking is symmetrical and transitive.
+	 * @param c the component to track
+	 */
+	void trackSizeIfEmpty(ImageViewer c) {
+		theImage.trackSizeIfEmpty(c.theImage);
+	}
 }
