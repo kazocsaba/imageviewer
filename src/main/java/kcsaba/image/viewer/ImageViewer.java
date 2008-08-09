@@ -9,6 +9,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -249,6 +250,19 @@ public class ImageViewer {
 	public ResizeStrategy getResizeStrategy() {
 		return theImage.getResizeStrategy();
 	}
+	
+	/**
+	 * Returns the transformation that is applied to the image. Most commonly the
+	 * transformation is the concatenation of a uniform scale and a translation.
+	 * <p>
+	 * The <code>AffineTransform</code>
+	 * instance returned by this method should not be modified.
+	 * @return the transformation applied to the image before painting
+	 */
+	public AffineTransform getImageTransform() {
+		return theImage.getImageTransform();
+	}
+	
 	/**
 	 * Adds an overlay as the specified layer.
 	 * @param overlay the overlay to add
