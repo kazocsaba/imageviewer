@@ -8,6 +8,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -266,6 +267,49 @@ public class ImageViewer {
 	public void removeOverlay(Overlay overlay) {
 		view.removeOverlay(overlay);
 	}
+	/**
+	 * Adds the specified mouse listener to receive mouse events from
+	 * the image component of this image viewer. If listener <code>l</code>
+	 * is <code>null</code>, no exception is thrown and no action is performed.
+	 * @param l the mouse listener
+	 */
+	public void addMouseListener(MouseListener l) {
+		theImage.addMouseListener(l);
+	}
+	/**
+	 * Removes the specified mouse listener so that it no longer receives
+	 * mouse motion events from the image component of this image viewer. This method
+	 * performs no function, nor does it throw an exception, if the listener specified
+	 * by the argument was not previously added to this component. If listener
+	 * <code>l</code> is <code>null</code>, no exception is thrown and no action is
+	 * performed.
+	 * @param l the mouse motion listener
+	 */
+	public void removeMouseListener(MouseListener l) {
+		theImage.removeMouseListener(l);
+	}
+	/**
+	 * Adds the specified mouse motion listener to receive mouse events from
+	 * the image component of this image viewer. If listener <code>l</code>
+	 * is <code>null</code>, no exception is thrown and no action is performed.
+	 * @param l the mouse listener
+	 */
+	public void addMouseMotionListener(MouseMotionListener l) {
+		theImage.addMouseMotionListener(l);
+	}
+	/**
+	 * Removes the specified mouse motion listener so that it no longer receives
+	 * mouse motion events from the image component of this image viewer. This method
+	 * performs no function, nor does it throw an exception, if the listener specified
+	 * by the argument was not previously added to this component. If listener
+	 * <code>l</code> is <code>null</code>, no exception is thrown and no action is
+	 * performed.
+	 * @param l the mouse motion listener
+	 */
+	public void removeMouseMotionListener(MouseMotionListener l) {
+		theImage.removeMouseMotionListener(l);
+	}
+	
 	public void addImageMouseMoveListener(ImageMouseMoveListener l) {
 		theImage.addImageMouseMoveListener(l);
 	}
@@ -277,7 +321,6 @@ public class ImageViewer {
 	public void addImageMouseClickListener(ImageMouseClickListener l) {
 		theImage.addImageMouseClickListener(l);
 	}
-	
 	public void removeImageMouseClickListener(ImageMouseClickListener l) {
 		theImage.removeImageMouseClickListener(l);
 	}
