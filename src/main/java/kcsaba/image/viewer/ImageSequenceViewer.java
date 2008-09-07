@@ -72,10 +72,21 @@ public class ImageSequenceViewer extends JPanel {
 
 		setPosition(position);
 	}
-
+	/**
+	 * Overridden to call {@link #positionChanged()}.
+	 */
+	@Override
+	public void addNotify() {
+		super.addNotify();
+		positionChanged();
+	}
+	
 	/**
 	 * Called when the current position of the viewer has changed. The default implementation does nothing.
 	 * Subclasses should override this method to update the image.
+	 * <p>
+	 * This method is not called from the constructor, but it is called before the viewer is made visible,
+	 * so subclasses can safely use this method to set the initial image.
 	 */
 	protected void positionChanged() {
 	}
@@ -96,7 +107,7 @@ public class ImageSequenceViewer extends JPanel {
 		updateLocationDefinition(position);
 		forwardButton.setEnabled(position < number - 1);
 		backwardButton.setEnabled(position > 0);
-		positionChanged();
+		if (getParent()!=null) positionChanged();
 	}
 
 	/**
