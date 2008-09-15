@@ -112,7 +112,6 @@ public class ImageSequenceViewer extends JPanel {
 
 	/**
 	 * Returns the current position of this image sequence shower.
-	 * @param pos the current position, at least zero, less than the number of images
 	 */
 	public int getPosition() {
 		return position;
