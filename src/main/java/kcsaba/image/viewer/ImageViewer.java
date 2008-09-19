@@ -85,7 +85,7 @@ public class ImageViewer {
 	public ImageViewer(BufferedImage image) {
 		propertyChangeSupport=new PropertyChangeSupport(this);
 		panel=new JPanel(new BorderLayout());
-		theImage=new ImageComponent(propertyChangeSupport);
+		theImage=new ImageComponent(this, propertyChangeSupport);
 		view=new LayeredImageView(theImage, propertyChangeSupport);
 		theImage.setImage(image);
 		scroller=new JScrollPane(view.getComponent()) {
