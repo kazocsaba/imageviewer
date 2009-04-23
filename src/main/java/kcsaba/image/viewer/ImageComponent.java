@@ -279,7 +279,7 @@ class ImageComponent extends JComponent {
 			ImageMouseEvent e = null;
 			for (ImageMouseMoveListener imageMouseMoveListener: moveListeners) {
 				if (e == null)
-					e = new ImageMouseEvent(eventSource, image, x, y);
+					e = new ImageMouseEvent(eventSource, image, x, y, ev);
 				imageMouseMoveListener.mouseMoved(e);
 			}
 		}
@@ -288,7 +288,7 @@ class ImageComponent extends JComponent {
 			ImageMouseEvent e = null;
 			for (ImageMouseClickListener imageMouseClickListener: clickListeners) {
 				if (e == null)
-					e = new ImageMouseEvent(eventSource, image, x, y);
+					e = new ImageMouseEvent(eventSource, image, x, y, ev);
 				imageMouseClickListener.mouseClicked(e);
 			}
 		}
@@ -297,7 +297,7 @@ class ImageComponent extends JComponent {
 			ImageMouseEvent e = null;
 			for (ImageMouseMoveListener imageMouseMoveListener: moveListeners) {
 				if (e == null)
-					e = new ImageMouseEvent(eventSource, image, x, y);
+					e = new ImageMouseEvent(eventSource, image, x, y, ev);
 				imageMouseMoveListener.mouseEntered(e);
 			}
 		}
@@ -306,7 +306,7 @@ class ImageComponent extends JComponent {
 			ImageMouseEvent e = null;
 			for (ImageMouseMoveListener imageMouseMoveListener: moveListeners) {
 				if (e == null)
-					e = new ImageMouseEvent(eventSource, image, -1, -1);
+					e = new ImageMouseEvent(eventSource, image, -1, -1, null);
 				imageMouseMoveListener.mouseExited(e);
 			}
 		}
