@@ -75,12 +75,12 @@ class LayeredImageView  {
 		 */
 		@Override
 		public boolean getScrollableTracksViewportWidth() {
-			return theImage.getResizeStrategy()==ResizeStrategy.SHRINK_TO_FIT;
+			return theImage.getResizeStrategy()==ResizeStrategy.SHRINK_TO_FIT || theImage.getResizeStrategy()==ResizeStrategy.RESIZE_TO_FIT;
 		}
 
 		@Override
 		public boolean getScrollableTracksViewportHeight() {
-			return theImage.getResizeStrategy()==ResizeStrategy.SHRINK_TO_FIT;
+			return theImage.getResizeStrategy()==ResizeStrategy.SHRINK_TO_FIT || theImage.getResizeStrategy()==ResizeStrategy.RESIZE_TO_FIT;
 		}
 		
 		/*

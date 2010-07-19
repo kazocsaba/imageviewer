@@ -54,7 +54,7 @@ class CustomViewportLayout implements LayoutManager {
 		Dimension vpSize = vp.getSize();
 		Dimension viewSize = new Dimension(view.getPreferredSize());
 
-		if (viewer.getResizeStrategy()==ResizeStrategy.SHRINK_TO_FIT) {
+		if (viewer.getResizeStrategy()==ResizeStrategy.SHRINK_TO_FIT || viewer.getResizeStrategy()==ResizeStrategy.RESIZE_TO_FIT) {
 			viewSize.width = vpSize.width;
 			viewSize.height = vpSize.height;
 		} else {

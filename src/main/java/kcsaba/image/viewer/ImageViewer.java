@@ -137,7 +137,7 @@ public class ImageViewer {
 		popup.add(toggleStatusBarItem);
 		
 		JMenu zoomMenu = new JMenu("Zoom");
-		final JRadioButtonMenuItem[] zoomButtons = new JRadioButtonMenuItem[2];
+		final JRadioButtonMenuItem[] zoomButtons = new JRadioButtonMenuItem[3];
 		zoomButtons[0] = new JRadioButtonMenuItem("Original size", imageViewer.getResizeStrategy()==ResizeStrategy.NO_RESIZE);
 		zoomButtons[0].addActionListener(new ActionListener() {
 
@@ -152,6 +152,14 @@ public class ImageViewer {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				imageViewer.setResizeStrategy(ResizeStrategy.SHRINK_TO_FIT);
+			}
+		});
+		zoomButtons[2] = new JRadioButtonMenuItem("Resize to fit", imageViewer.getResizeStrategy()==ResizeStrategy.RESIZE_TO_FIT);
+		zoomButtons[2].addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				imageViewer.setResizeStrategy(ResizeStrategy.RESIZE_TO_FIT);
 			}
 		});
 		ButtonGroup group = new ButtonGroup();

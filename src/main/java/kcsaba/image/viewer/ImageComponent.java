@@ -180,6 +180,13 @@ class ImageComponent extends JComponent {
 				tr.setToTranslation((getWidth()-imageDisplayWidth)/2.0, (getHeight()-imageDisplayHeight)/2.0);
 				tr.scale(shrink, shrink);
 				break;
+			case RESIZE_TO_FIT:
+				double scale = getSizeRatio();
+				imageDisplayWidth=image.getWidth()*scale;
+				imageDisplayHeight=image.getHeight()*scale;
+				tr.setToTranslation((getWidth()-imageDisplayWidth)/2.0, (getHeight()-imageDisplayHeight)/2.0);
+				tr.scale(scale, scale);
+				break;
 			default:
 				throw new Error("Unhandled resize strategy");
 		}
