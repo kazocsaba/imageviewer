@@ -151,9 +151,8 @@ class ImageComponent extends JComponent {
 	
 	@Override
 	protected void paintComponent(Graphics g) {
-		if (image == null) {
-			g.clearRect(0, 0, getWidth(), getHeight());
-		} else {
+		g.clearRect(0, 0, getWidth(), getHeight());
+		if (image!=null) {
 			Graphics2D gg = (Graphics2D) g.create();
 			paint(gg);
 			gg.dispose();
