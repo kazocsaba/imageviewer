@@ -171,13 +171,13 @@ class ImageComponent extends JComponent {
 		AffineTransform tr=new AffineTransform();
 		switch (resizeStrategy) {
 			case NO_RESIZE:
-				tr.setToTranslation((getWidth()-image.getWidth())/2, (getHeight()-image.getHeight())/2);
+				tr.setToTranslation((getWidth()-image.getWidth())/2.0, (getHeight()-image.getHeight())/2.0);
 				break;
 			case SHRINK_TO_FIT:
 				double shrink = Math.min(getSizeRatio(), 1);
 				double imageDisplayWidth=image.getWidth()*shrink;
 				double imageDisplayHeight=image.getHeight()*shrink;
-				tr.setToTranslation((getWidth()-imageDisplayWidth)/2, (getHeight()-imageDisplayHeight)/2);
+				tr.setToTranslation((getWidth()-imageDisplayWidth)/2.0, (getHeight()-imageDisplayHeight)/2.0);
 				tr.scale(shrink, shrink);
 				break;
 			default:
