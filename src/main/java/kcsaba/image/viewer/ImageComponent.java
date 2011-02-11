@@ -7,6 +7,7 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
+import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -138,11 +139,14 @@ class ImageComponent extends JComponent {
 	 * @return the corresponding image pixel, or <code>null</code> if the point is outside the image
 	 */
 	public Point pointToPixel(Point p) {
+		Point2D.Double fp=new Point2D.Double(p.x+.5, p.y+.5);
 		try {
-			getImageTransform().inverseTransform(p, p);
+			getImageTransform().inverseTransform(fp, fp);
 		} catch (NoninvertibleTransformException ex) {
 			throw new Error("Image transformation not invertible");
 		}
+		p.x=(int)Math.floor(fp.x);
+		p.y=(int)Math.floor(fp.y);
 		if (p.x < 0 || p.y < 0 || p.x >= image.getWidth() || p.y >= image.getHeight()) {
 			return null;
 		}
