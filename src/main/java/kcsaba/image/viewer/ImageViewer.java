@@ -380,4 +380,19 @@ public class ImageViewer {
 	void trackSizeIfEmpty(ImageViewer c) {
 		theImage.trackSizeIfEmpty(c.theImage);
 	}
+	
+	/**
+	 * Returns the image pixel corresponding to the given point. If the <code>clipToImage</code>
+	 * parameter is <code>false</code>, then the function will return an appropriately positioned
+	 * pixel on an infinite plane, even if the point is outside the image bounds. If
+	 * <code>clipToImage</code> is <code>true</code> then the function will return <code>null</code>
+	 * for such positions, and any non-null return value will be a valid image pixel.
+	 * @param p a point in component coordinate system
+	 * @param clipToImage whether the function should return <code>null</code> for positions outside
+	 * the image bounds
+	 * @return the corresponding image pixel
+	 */
+	public Point pointToPixel(Point p, boolean clipToImage) {
+		return theImage.pointToPixel(p, clipToImage);
+	}
 }
