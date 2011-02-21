@@ -22,4 +22,10 @@ public interface ImageMouseMoveListener extends EventListener {
 	 * @param e the event object containing attributes of the event
 	 */
 	public void mouseExited(ImageMouseEvent e);
+	/**
+	 * Invoked when the mouse is moved while a button is down. Note that the
+	 * coordinates for the event can be outside the image bounds.
+	 * @param e the event object containing attributes of the event
+	 */
+	public void mouseDragged(ImageMouseEvent e);
 }

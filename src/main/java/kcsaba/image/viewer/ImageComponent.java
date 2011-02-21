@@ -139,6 +139,20 @@ class ImageComponent extends JComponent {
 	 * @return the corresponding image pixel, or <code>null</code> if the point is outside the image
 	 */
 	public Point pointToPixel(Point p) {
+		return pointToPixel(p, true);
+	}
+	/**
+	 * Returns the image pixel corresponding to the given point. If the <code>clipToImage</code>
+	 * parameter is <code>false</code>, then the function will return an appropriately positioned
+	 * pixel on an infinite plane, even if the point is outside the image bounds. If
+	 * <code>clipToImage</code> is <code>true</code> then the function will return <code>null</code>
+	 * for such positions, and any non-null return value will be a valid image pixel.
+	 * @param p a point in component coordinate system
+	 * @param clipToImage whether the function should return <code>null</code> for positions outside
+	 * the image bounds
+	 * @return the corresponding image pixel
+	 */
+	public Point pointToPixel(Point p, boolean clipToImage) {
 		Point2D.Double fp=new Point2D.Double(p.x+.5, p.y+.5);
 		try {
 			getImageTransform().inverseTransform(fp, fp);
@@ -147,7 +161,7 @@ class ImageComponent extends JComponent {
 		}
 		p.x=(int)Math.floor(fp.x);
 		p.y=(int)Math.floor(fp.y);
-		if (p.x < 0 || p.y < 0 || p.x >= image.getWidth() || p.y >= image.getHeight()) {
+		if (clipToImage && (p.x < 0 || p.y < 0 || p.x >= image.getWidth() || p.y >= image.getHeight())) {
 			return null;
 		}
 		return p;
@@ -261,6 +275,14 @@ class ImageComponent extends JComponent {
 				fireMouseAtPixel(p.x, p.y, e);
 			}
 		}
+
+		@Override
+		public void mouseDragged(MouseEvent e) {
+			if (image==null) return;
+			Point p = pointToPixel(e.getPoint(), false);
+			fireMouseDrag(p.x, p.y, e);
+		}
+		
 		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
 			if ("image".equals(evt.getPropertyName())) {
@@ -320,14 +342,20 @@ class ImageComponent extends JComponent {
 				imageMouseMoveListener.mouseExited(e);
 			}
 		}
+		
+		private void fireMouseDrag(int x, int y, MouseEvent ev) {
+			ImageMouseEvent e = null;
+			for (ImageMouseMoveListener imageMouseMoveListener: moveListeners) {
+				if (e == null)
+					e = new ImageMouseEvent(eventSource, image, x, y, ev);
+				imageMouseMoveListener.mouseDragged(e);
+			}
+		}
 
 		@Override
 		public void mousePressed(MouseEvent e) {}
 
 		@Override
 		public void mouseReleased(MouseEvent e) {}
-
-		@Override
-		public void mouseDragged(MouseEvent e) {}
 	}
 }

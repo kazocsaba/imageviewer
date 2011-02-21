@@ -39,6 +39,9 @@ public class DefaultStatusBar extends StatusBar implements ImageMouseMoveListene
 	public void mouseEntered(ImageMouseEvent e) {}
 
 	@Override
+	public void mouseDragged(ImageMouseEvent e) {}
+	
+	@Override
 	public JComponent getComponent() {
 		return statusBar;
 	}
