@@ -14,10 +14,16 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
@@ -48,6 +54,11 @@ public class ImageViewer {
 	private boolean statusBarVisible=false;
 	private PropertyChangeSupport propertyChangeSupport;
 	private JPopupMenu popup;
+	/*
+	 * This will only be accessed from the event dispatch thread so using a static instance to share
+	 * the current directory across components is fine.
+	 */
+	private static JFileChooser saveChooser;
 
 	private MouseListener contextMenuListener = new MouseAdapter() {
 		private void showPopup(MouseEvent e) {
@@ -175,6 +186,38 @@ public class ImageViewer {
 			}
 		});
 		popup.add(zoomMenu);
+		JMenuItem saveImageMenuItem=new JMenuItem("Save image...");
+		saveImageMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (saveChooser==null) {
+					saveChooser=new JFileChooser();
+					saveChooser.setDialogTitle("Save image...");
+				}
+				if (JFileChooser.APPROVE_OPTION==saveChooser.showSaveDialog(imageViewer.getComponent())) {
+					File f=saveChooser.getSelectedFile();
+					BufferedImage image=imageViewer.getImage();
+					if (image==null) {
+						JOptionPane.showMessageDialog(imageViewer.getComponent(), "No image", "Error", JOptionPane.ERROR_MESSAGE);
+					} else {
+						String name=f.getName().toLowerCase();
+						try {
+							if (name.endsWith(".jpg")) {
+								ImageIO.write(image, "jpg", f);
+							} else if (name.endsWith(".png")) {
+								ImageIO.write(image, "png", f);
+							} else {
+								f=new File(f.getPath()+".png");
+								ImageIO.write(image, "png", f);
+							}
+						} catch (IOException ex) {
+							JOptionPane.showMessageDialog(imageViewer.getComponent(), "Cannot write image to "+f.getAbsolutePath(), "Error", JOptionPane.ERROR_MESSAGE);
+						}
+					}
+				}
+			}
+		});
+		popup.add(saveImageMenuItem);
 		return popup;
 	}
 	/**
