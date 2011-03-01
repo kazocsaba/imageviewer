@@ -44,6 +44,8 @@ class LayeredImageView  {
 		OverlayComponent c=new OverlayComponent(overlay, theImage);
 		overlay.setOverlayComponent(c);
 		layeredPane.add(c, Integer.valueOf(layer));
+		layeredPane.revalidate();
+		layeredPane.repaint();
 	}
 	/**
 	 * Removes an overlay from the image viewer.
@@ -55,6 +57,8 @@ class LayeredImageView  {
 			throw new IllegalArgumentException("Overlay not part of this viewer");
 		layeredPane.remove(overlay.overlayComponent);
 		overlay.setOverlayComponent(null);
+		layeredPane.revalidate();
+		layeredPane.repaint();
 	}
 	private class ScrollableLayeredPane extends JLayeredPane implements Scrollable {
 
