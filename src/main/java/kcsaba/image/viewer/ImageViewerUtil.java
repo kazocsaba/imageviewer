@@ -37,17 +37,20 @@ public class ImageViewerUtil {
 		
 	}
 	/**
-	 * Synchronizes the view state of two image viewers with respect to scroll position
+	 * Synchronizes the view state of multiple image viewers with respect to scroll position
 	 * and resize strategy, and other properties affecting display. For this to work
-	 * correctly, the two viewers should always have the same size.
-	 * @param v1 the first viewer
-	 * @param v2 the second viewer
+	 * correctly, the viewers should always have the same size.
+	 * @param first the first viewer
+	 * @param others the other viewers
 	 */
-	public static void synchronizeViewers(ImageViewer v1, ImageViewer v2) {
-		if (v1==v2) return;
-		v1.getScrollPane().getHorizontalScrollBar().setModel(v2.getScrollPane().getHorizontalScrollBar().getModel());
-		v1.getScrollPane().getVerticalScrollBar().setModel(v2.getScrollPane().getVerticalScrollBar().getModel());
-		v1.trackSizeIfEmpty(v2);
-		new PropertySynchronizer(v1, v2);
+	public static void synchronizeViewers(ImageViewer first, ImageViewer... others) {
+		for (ImageViewer other: others) {
+			if (other!=first) {
+				other.getScrollPane().getHorizontalScrollBar().setModel(first.getScrollPane().getHorizontalScrollBar().getModel());
+				other.getScrollPane().getVerticalScrollBar().setModel(first.getScrollPane().getVerticalScrollBar().getModel());
+				other.trackSizeIfEmpty(first);
+				new PropertySynchronizer(first, other);
+			}
+		}
 	}
 }
