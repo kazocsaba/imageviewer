@@ -170,12 +170,13 @@ class ImageComponent extends JComponent {
 	
 	@Override
 	protected void paintComponent(Graphics g) {
-		g.clearRect(0, 0, getWidth(), getHeight());
+		Graphics2D gg = (Graphics2D) g.create();
+		gg.setColor(getBackground());
+		gg.fillRect(0, 0, getWidth(), getHeight());
 		if (image!=null) {
-			Graphics2D gg = (Graphics2D) g.create();
 			paint(gg);
-			gg.dispose();
 		}
+		gg.dispose();
 	}
 
 	/**
