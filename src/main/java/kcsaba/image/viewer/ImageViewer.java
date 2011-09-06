@@ -128,7 +128,8 @@ public class ImageViewer {
 		theImage.addMouseListener(contextMenuListener);
 	}
 	private static JPopupMenu createPopup(final ImageViewer imageViewer) {
-		JPopupMenu popup = new JPopupMenu();
+		/** Status bar toggle **/
+		
 		final JCheckBoxMenuItem toggleStatusBarItem = new JCheckBoxMenuItem("Status bar");
 		toggleStatusBarItem.setState(imageViewer.isStatusBarVisible());
 		imageViewer.addPropertyChangeListener("statusBarVisible", new PropertyChangeListener() {
@@ -145,7 +146,8 @@ public class ImageViewer {
 				imageViewer.setStatusBarVisible(!imageViewer.isStatusBarVisible());
 			}
 		});
-		popup.add(toggleStatusBarItem);
+		
+		/** Zoom menu **/
 		
 		JMenu zoomMenu = new JMenu("Zoom");
 		final JRadioButtonMenuItem[] zoomButtons = new JRadioButtonMenuItem[3];
@@ -185,7 +187,9 @@ public class ImageViewer {
 				zoomButtons[((ResizeStrategy)evt.getNewValue()).ordinal()].setSelected(true);
 			}
 		});
-		popup.add(zoomMenu);
+		
+		/** Save command **/
+		
 		JMenuItem saveImageMenuItem=new JMenuItem("Save image...");
 		saveImageMenuItem.addActionListener(new ActionListener() {
 			@Override
@@ -217,6 +221,29 @@ public class ImageViewer {
 				}
 			}
 		});
+		
+		/** Pixelated zoom toggle **/
+		final JCheckBoxMenuItem togglePixelatedZoomItem = new JCheckBoxMenuItem("Pixelated zoom");
+		togglePixelatedZoomItem.setState(imageViewer.isPixelatedZoom());
+		imageViewer.addPropertyChangeListener("pixelatedZoom", new PropertyChangeListener() {
+
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				togglePixelatedZoomItem.setState(imageViewer.isPixelatedZoom());
+			}
+		});
+		togglePixelatedZoomItem.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				imageViewer.setPixelatedZoom(!imageViewer.isPixelatedZoom());
+			}
+		});
+		
+		JPopupMenu popup = new JPopupMenu();
+		popup.add(toggleStatusBarItem);
+		popup.add(zoomMenu);
+		popup.add(togglePixelatedZoomItem);
 		popup.add(saveImageMenuItem);
 		return popup;
 	}
@@ -302,6 +329,20 @@ public class ImageViewer {
 		return theImage.getResizeStrategy();
 	}
 	
+	/**
+	 * Sets whether the image should be resized with nearest neighbor interpolation when it is expanded.
+	 * @param pixelatedZoom the new value of the pixelatedZoom property
+	 */
+	public void setPixelatedZoom(boolean pixelatedZoom) {
+		theImage.setPixelatedZoom(pixelatedZoom);
+	}
+	/**
+	 * Returns the current pixelated zoom setting.
+	 * @return the current pixelated zoom setting
+	 */
+	public boolean isPixelatedZoom() {
+		return theImage.isPixelatedZoom();
+	}
 	/**
 	 * Returns the transformation that is applied to the image. Most commonly the
 	 * transformation is the concatenation of a uniform scale and a translation.

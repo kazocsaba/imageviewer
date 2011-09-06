@@ -27,6 +27,7 @@ import javax.swing.event.MouseInputListener;
 class ImageComponent extends JComponent {
 	private ResizeStrategy resizeStrategy = ResizeStrategy.NO_RESIZE;
 	private BufferedImage image;
+	private boolean pixelatedZoom=false;
 	private final List<ImageMouseMoveListener> moveListeners = new ArrayList<ImageMouseMoveListener>(4);
 	private final List<ImageMouseClickListener> clickListeners = new ArrayList<ImageMouseClickListener>(4);
 	private final MouseEventTranslator mouseEventTranslator = new MouseEventTranslator();
@@ -86,9 +87,21 @@ class ImageComponent extends JComponent {
 		repaint();
 		propertyChangeSupport.firePropertyChange("resizeStrategy", oldResizeStrategy, resizeStrategy);
 	}
-
+	
 	public ResizeStrategy getResizeStrategy() {
 		return resizeStrategy;
+	}
+	
+	public void setPixelatedZoom(boolean pixelatedZoom) {
+		if (pixelatedZoom == this.pixelatedZoom)
+			return;
+		this.pixelatedZoom = pixelatedZoom;
+		repaint();
+		propertyChangeSupport.firePropertyChange("pixelatedZoom", !pixelatedZoom, pixelatedZoom);
+	}
+	
+	public boolean isPixelatedZoom() {
+		return pixelatedZoom;
 	}
 	
 	@Override
@@ -215,8 +228,13 @@ class ImageComponent extends JComponent {
 
 	private void paint(Graphics2D g) {
 		g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-		g.transform(getImageTransform());
+		AffineTransform imageTransform = getImageTransform();
+		if (pixelatedZoom && (imageTransform.getScaleX()>=1 || imageTransform.getScaleY()>=1)) {
+			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+		} else {
+			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+		}
+		g.transform(imageTransform);
 		g.drawImage(image, 0, 0, null);
 	}
 
