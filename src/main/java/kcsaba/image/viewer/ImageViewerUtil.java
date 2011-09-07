@@ -32,6 +32,10 @@ public class ImageViewerUtil {
 				target.setStatusBarVisible(source.isStatusBarVisible());
 			} else if ("resizeStrategy".equals(evt.getPropertyName())) {
 				target.setResizeStrategy(source.getResizeStrategy());
+			} else if ("zoomFactor".equals(evt.getPropertyName())) {
+				target.setZoomFactor(source.getZoomFactor());
+			} else if ("pixelatedZoom".equals(evt.getPropertyName())) {
+				target.setPixelatedZoom(source.isPixelatedZoom());
 			}
 		}
 		

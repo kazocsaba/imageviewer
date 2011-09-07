@@ -28,6 +28,7 @@ class ImageComponent extends JComponent {
 	private ResizeStrategy resizeStrategy = ResizeStrategy.NO_RESIZE;
 	private BufferedImage image;
 	private boolean pixelatedZoom=false;
+	private double zoomFactor=1;
 	private final List<ImageMouseMoveListener> moveListeners = new ArrayList<ImageMouseMoveListener>(4);
 	private final List<ImageMouseClickListener> clickListeners = new ArrayList<ImageMouseClickListener>(4);
 	private final MouseEventTranslator mouseEventTranslator = new MouseEventTranslator();
@@ -104,6 +105,27 @@ class ImageComponent extends JComponent {
 		return pixelatedZoom;
 	}
 	
+	/** Returns the zoom factor used when resize strategy is CUSTOM_ZOOM. */
+	public double getZoomFactor() {
+		return zoomFactor;
+	}
+	
+	/**
+	 * Sets the zoom factor to use when the resize strategy is CUSTOM_ZOOM.
+	 * <p>
+	 * Note that calling this function does not change the current resize strategy.
+	 * @throws IllegalArgumentException if {@code newZoomFactor} is not a positive number
+	 */
+	public void setZoomFactor(double newZoomFactor) {
+		if (zoomFactor==newZoomFactor) return;
+		if (newZoomFactor<=0 || Double.isInfinite(newZoomFactor) || Double.isNaN(newZoomFactor))
+			throw new IllegalArgumentException("Invalid zoom factor: "+newZoomFactor);
+		double oldZoomFactor=zoomFactor;
+		zoomFactor=newZoomFactor;
+		revalidate();
+		repaint();
+		propertyChangeSupport.firePropertyChange("zoomFactor", oldZoomFactor, newZoomFactor);
+	}
 	@Override
 	public Dimension getPreferredSize() {
 		if (image == null) {
@@ -112,6 +134,8 @@ class ImageComponent extends JComponent {
 					if (c.getImage()!=null)
 						return new Dimension(c.getImage().getWidth(), c.getImage().getHeight());
 			return new Dimension();
+		} else if (resizeStrategy==ResizeStrategy.CUSTOM_ZOOM) {
+			return new Dimension((int)Math.ceil(image.getWidth()*zoomFactor), (int)Math.ceil(image.getHeight()*zoomFactor));
 		} else
 			return new Dimension(image.getWidth(), image.getHeight());
 	}
@@ -199,30 +223,30 @@ class ImageComponent extends JComponent {
 	 * The <code>AffineTransform</code>
 	 * instance returned by this method should not be modified.
 	 * @return the transformation applied to the image before painting
+	 * @throws IllegalStateException if there is no image set
 	 */
 	public AffineTransform getImageTransform() {
-		AffineTransform tr=new AffineTransform();
+		if (getImage()==null) throw new IllegalStateException("No image");
+		double currentZoom;
 		switch (resizeStrategy) {
 			case NO_RESIZE:
-				tr.setToTranslation((getWidth()-image.getWidth())/2.0, (getHeight()-image.getHeight())/2.0);
+				currentZoom=1;
 				break;
 			case SHRINK_TO_FIT:
-				double shrink = Math.min(getSizeRatio(), 1);
-				double imageDisplayWidth=image.getWidth()*shrink;
-				double imageDisplayHeight=image.getHeight()*shrink;
-				tr.setToTranslation((getWidth()-imageDisplayWidth)/2.0, (getHeight()-imageDisplayHeight)/2.0);
-				tr.scale(shrink, shrink);
+				currentZoom = Math.min(getSizeRatio(), 1);
 				break;
 			case RESIZE_TO_FIT:
-				double scale = getSizeRatio();
-				imageDisplayWidth=image.getWidth()*scale;
-				imageDisplayHeight=image.getHeight()*scale;
-				tr.setToTranslation((getWidth()-imageDisplayWidth)/2.0, (getHeight()-imageDisplayHeight)/2.0);
-				tr.scale(scale, scale);
+				currentZoom = getSizeRatio();
+				break;
+			case CUSTOM_ZOOM:
+				currentZoom = zoomFactor;
 				break;
 			default:
 				throw new Error("Unhandled resize strategy");
 		}
+		AffineTransform tr=new AffineTransform();
+		tr.setToTranslation((getWidth()-image.getWidth()*currentZoom)/2.0, (getHeight()-image.getHeight()*currentZoom)/2.0);
+		tr.scale(currentZoom, currentZoom);
 		return tr;
 	}
 
@@ -234,8 +258,7 @@ class ImageComponent extends JComponent {
 		} else {
 			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 		}
-		g.transform(imageTransform);
-		g.drawImage(image, 0, 0, null);
+		g.drawImage(image, imageTransform, this);
 	}
 
 	private double getSizeRatio() {

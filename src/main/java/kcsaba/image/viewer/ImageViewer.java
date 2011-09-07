@@ -28,6 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JViewport;
 
 /**
@@ -150,41 +151,104 @@ public class ImageViewer {
 		/** Zoom menu **/
 		
 		JMenu zoomMenu = new JMenu("Zoom");
-		final JRadioButtonMenuItem[] zoomButtons = new JRadioButtonMenuItem[3];
-		zoomButtons[0] = new JRadioButtonMenuItem("Original size", imageViewer.getResizeStrategy()==ResizeStrategy.NO_RESIZE);
-		zoomButtons[0].addActionListener(new ActionListener() {
+		final JRadioButtonMenuItem zoomOriginalSize = new JRadioButtonMenuItem("Original size", imageViewer.getResizeStrategy()==ResizeStrategy.NO_RESIZE);
+		zoomOriginalSize.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				imageViewer.setResizeStrategy(ResizeStrategy.NO_RESIZE);
 			}
 		});
-		zoomButtons[1] = new JRadioButtonMenuItem("Shrink to fit", imageViewer.getResizeStrategy()==ResizeStrategy.SHRINK_TO_FIT);
-		zoomButtons[1].addActionListener(new ActionListener() {
+		final JRadioButtonMenuItem zoomShrinkToFit = new JRadioButtonMenuItem("Shrink to fit", imageViewer.getResizeStrategy()==ResizeStrategy.SHRINK_TO_FIT);
+		zoomShrinkToFit.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				imageViewer.setResizeStrategy(ResizeStrategy.SHRINK_TO_FIT);
 			}
 		});
-		zoomButtons[2] = new JRadioButtonMenuItem("Resize to fit", imageViewer.getResizeStrategy()==ResizeStrategy.RESIZE_TO_FIT);
-		zoomButtons[2].addActionListener(new ActionListener() {
+		final JRadioButtonMenuItem zoomResizeToFit = new JRadioButtonMenuItem("Resize to fit", imageViewer.getResizeStrategy()==ResizeStrategy.RESIZE_TO_FIT);
+		zoomResizeToFit.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				imageViewer.setResizeStrategy(ResizeStrategy.RESIZE_TO_FIT);
 			}
 		});
-		ButtonGroup group = new ButtonGroup();
-		for (JRadioButtonMenuItem i : zoomButtons) {
-			zoomMenu.add(i);
-			group.add(i);
+		
+		class CustomZoomEntry {
+			String label;
+			double value;
+			JRadioButtonMenuItem menuItem;
+
+			private CustomZoomEntry(String label, double value) {
+				this.label = label;
+				this.value = value;
+				menuItem=new JRadioButtonMenuItem(label, imageViewer.getResizeStrategy()==ResizeStrategy.CUSTOM_ZOOM && imageViewer.getZoomFactor()==value);
+				menuItem.addActionListener(new ActionListener() {
+
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						imageViewer.setResizeStrategy(ResizeStrategy.CUSTOM_ZOOM);
+						imageViewer.setZoomFactor(CustomZoomEntry.this.value);
+					}
+				});
+			}
+			
 		}
+		final CustomZoomEntry[] customZoomEntries={
+			new CustomZoomEntry("25%", .25),
+			new CustomZoomEntry("50%", .50),
+			new CustomZoomEntry("75%", .75),
+			new CustomZoomEntry("100%", 1),
+			new CustomZoomEntry("150%", 1.5),
+			new CustomZoomEntry("200%", 2),
+			new CustomZoomEntry("300%", 3),
+			new CustomZoomEntry("500%", 5),
+			new CustomZoomEntry("1000%", 10),
+			new CustomZoomEntry("2000%", 20),
+			new CustomZoomEntry("5000%", 50)
+		};
+		final ButtonGroup group = new ButtonGroup();
+		group.add(zoomOriginalSize);
+		group.add(zoomShrinkToFit);
+		group.add(zoomResizeToFit);
+		
+		zoomMenu.add(zoomOriginalSize);
+		zoomMenu.add(zoomShrinkToFit);
+		zoomMenu.add(zoomResizeToFit);
+		zoomMenu.add(new JSeparator());
+		for (CustomZoomEntry cze: customZoomEntries) {
+			zoomMenu.add(cze.menuItem);
+			group.add(cze.menuItem);
+		}
+		
 		imageViewer.addPropertyChangeListener("resizeStrategy", new PropertyChangeListener() {
 
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
-				zoomButtons[((ResizeStrategy)evt.getNewValue()).ordinal()].setSelected(true);
+				switch ((ResizeStrategy)evt.getNewValue()) {
+					case NO_RESIZE:
+						zoomOriginalSize.setSelected(true);
+						break;
+					case RESIZE_TO_FIT:
+						zoomResizeToFit.setSelected(true);
+						break;
+					case SHRINK_TO_FIT:
+						zoomShrinkToFit.setSelected(true);
+						break;
+					case CUSTOM_ZOOM:
+						group.clearSelection();
+						for (CustomZoomEntry cze: customZoomEntries) {
+							if (cze.value==imageViewer.getZoomFactor()) {
+								cze.menuItem.setSelected(true);
+								break;
+							}
+						}
+						break;
+					default:
+						throw new AssertionError("Unknown resize strategy: "+evt.getNewValue());
+				}
 			}
 		});
 		
@@ -342,6 +406,24 @@ public class ImageViewer {
 	 */
 	public boolean isPixelatedZoom() {
 		return theImage.isPixelatedZoom();
+	}
+	
+	/**
+	 * Returns the zoom factor used when resize strategy is CUSTOM_ZOOM.
+	 * @return the custom zoom factor
+	 */
+	public double getZoomFactor() {
+		return theImage.getZoomFactor();
+	}
+	
+	/**
+	 * Sets the zoom factor to use when the resize strategy is CUSTOM_ZOOM.
+	 * <p>
+	 * Note that calling this function does not change the current resize strategy.
+	 * @throws IllegalArgumentException if {@code newZoomFactor} is not a positive number
+	 */
+	public void setZoomFactor(double newZoomFactor) {
+		theImage.setZoomFactor(newZoomFactor);
 	}
 	/**
 	 * Returns the transformation that is applied to the image. Most commonly the
