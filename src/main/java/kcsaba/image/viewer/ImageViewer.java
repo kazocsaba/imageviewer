@@ -251,6 +251,21 @@ public class ImageViewer {
 				}
 			}
 		});
+		imageViewer.addPropertyChangeListener("zoomFactor", new PropertyChangeListener() {
+
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				if (imageViewer.getResizeStrategy()==ResizeStrategy.CUSTOM_ZOOM) {
+					group.clearSelection();
+					for (CustomZoomEntry cze: customZoomEntries) {
+						if (cze.value==imageViewer.getZoomFactor()) {
+							cze.menuItem.setSelected(true);
+							break;
+						}
+					}
+				}
+			}
+		});
 		
 		/** Save command **/
 		
