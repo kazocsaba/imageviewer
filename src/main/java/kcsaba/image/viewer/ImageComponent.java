@@ -1,9 +1,11 @@
 package kcsaba.image.viewer;
 
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
@@ -18,6 +20,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.JComponent;
+import javax.swing.JViewport;
+import javax.swing.SwingUtilities;
 import javax.swing.event.MouseInputListener;
 
 /**
@@ -32,6 +36,42 @@ class ImageComponent extends JComponent {
 	private final List<ImageMouseMoveListener> moveListeners = new ArrayList<ImageMouseMoveListener>(4);
 	private final List<ImageMouseClickListener> clickListeners = new ArrayList<ImageMouseClickListener>(4);
 	private final MouseEventTranslator mouseEventTranslator = new MouseEventTranslator();
+	
+	/* Handles repositioning the scroll pane when the image is resized so that the same are remains visible. */
+	class Rescroller implements Runnable {
+		private Point preparedCenter=null;
+		private BufferedImage preparedImage;
+		
+		void prepare() {
+			if (preparedCenter==null && image!=null) {
+				Rectangle viewRect=((JViewport)SwingUtilities.getAncestorOfClass(JViewport.class, ImageComponent.this)).getViewRect();
+				preparedCenter=new Point(viewRect.x+viewRect.width/2, viewRect.y+viewRect.height/2);
+				try {
+					getImageTransform().inverseTransform(preparedCenter, preparedCenter);
+				} catch (NoninvertibleTransformException e) {
+					throw new Error(e);
+				}
+				preparedImage=image;
+				EventQueue.invokeLater(this);
+			}
+		}
+
+		@Override
+		public void run() {
+			if (preparedImage==image) {
+				JViewport viewport = (JViewport)SwingUtilities.getAncestorOfClass(JViewport.class, ImageComponent.this);
+				Dimension viewSize=(viewport).getExtentSize();
+				getImageTransform().transform(preparedCenter, preparedCenter);
+				Rectangle view = new Rectangle(preparedCenter.x-viewSize.width/2, preparedCenter.y-viewSize.height/2, viewSize.width, viewSize.height);
+				scrollRectToVisible(view);
+				
+				preparedCenter=null;
+			}
+		}
+		
+	}
+	private Rescroller rescroller=new Rescroller();
+	
 	/**
 	 * This set is shared by all synchronized image components and contains all
 	 * synchronized image components. Unless there is no synchronization; then it is null.
@@ -82,6 +122,7 @@ class ImageComponent extends JComponent {
 	public void setResizeStrategy(ResizeStrategy resizeStrategy) {
 		if (resizeStrategy == this.resizeStrategy)
 			return;
+		rescroller.prepare();
 		ResizeStrategy oldResizeStrategy=this.resizeStrategy;
 		this.resizeStrategy = resizeStrategy;
 		revalidate();
@@ -120,6 +161,7 @@ class ImageComponent extends JComponent {
 		if (zoomFactor==newZoomFactor) return;
 		if (newZoomFactor<=0 || Double.isInfinite(newZoomFactor) || Double.isNaN(newZoomFactor))
 			throw new IllegalArgumentException("Invalid zoom factor: "+newZoomFactor);
+		rescroller.prepare();
 		double oldZoomFactor=zoomFactor;
 		zoomFactor=newZoomFactor;
 		revalidate();
