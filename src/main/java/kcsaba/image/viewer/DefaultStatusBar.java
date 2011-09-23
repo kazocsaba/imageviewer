@@ -1,6 +1,9 @@
 package kcsaba.image.viewer;
 
 import java.awt.Color;
+import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -11,9 +14,11 @@ import javax.swing.JPanel;
  * coordinates) and the colour of the pixel under the cursor.
  * @author Kazó Csaba
  */
-public class DefaultStatusBar extends StatusBar implements ImageMouseMoveListener {
+public class DefaultStatusBar extends StatusBar implements ImageMouseMoveListener, PropertyChangeListener {
 	private final JPanel statusBar;
 	private final JLabel posLabel;
+	
+	private int currentX=-1, currentY=-1;
 
 	public DefaultStatusBar() {
 		statusBar = new JPanel();
@@ -24,15 +29,38 @@ public class DefaultStatusBar extends StatusBar implements ImageMouseMoveListene
 	
 	@Override
 	public void mouseMoved(ImageMouseEvent e) {
-		int rgb = e.getImage().getRGB(e.getX(), e.getY());
-		Color c = new Color(rgb);
-		posLabel.setText(String.format("%d, %d; color %d,%d,%d", e.getX(), e.getY(),
-				c.getRed(), c.getGreen(), c.getBlue()));
+		currentX=e.getX();
+		currentY=e.getY();
+		update(e.getImage());
 	}
 
 	@Override
 	public void mouseExited(ImageMouseEvent e) {
-		posLabel.setText("n/a");
+		currentX=-1; currentY=-1;
+		update(e.getImage());
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		if ("image".equals(evt.getPropertyName()))
+			update((BufferedImage)evt.getNewValue());
+	}
+	
+	private void update(BufferedImage image) {
+		if (currentX==-1 || image==null)
+			posLabel.setText("n/a");
+		else {
+			if (image.getRaster().getNumBands()==1) {
+				posLabel.setText(String.format("%d, %d; intensity %d", currentX, currentY,
+						image.getRaster().getSample(currentX, currentY, 0)));
+				
+			} else {
+				int rgb = image.getRGB(currentX, currentY);
+				Color c = new Color(rgb);
+				posLabel.setText(String.format("%d, %d; color %d,%d,%d", currentX, currentY,
+						c.getRed(), c.getGreen(), c.getBlue()));
+			}
+		}
 	}
 
 	@Override
@@ -49,11 +77,13 @@ public class DefaultStatusBar extends StatusBar implements ImageMouseMoveListene
 	@Override
 	protected void register(ImageViewer viewer) {
 		viewer.addImageMouseMoveListener(this);
+		viewer.addPropertyChangeListener("image", this);
 	}
 
 	@Override
 	protected void unregister(ImageViewer viewer) {
 		viewer.removeImageMouseMoveListener(this);
+		viewer.removePropertyChangeListener("image", this);
 	}
 	
 }
