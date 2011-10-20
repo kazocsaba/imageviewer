@@ -1,6 +1,7 @@
 package kcsaba.image.viewer;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -109,6 +110,11 @@ public class ImageViewer {
 					@Override
 					protected LayoutManager createLayoutManager() {
 						return new CustomViewportLayout(ImageViewer.this);
+					}
+					
+					@Override
+					public Dimension getMaximumSize() {
+						return new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE);
 					}
 					
 				};

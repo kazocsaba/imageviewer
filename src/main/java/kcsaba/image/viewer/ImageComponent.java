@@ -88,6 +88,11 @@ class ImageComponent extends JComponent {
 		setOpaque(true);
 	}
 	
+	@Override
+	public Dimension getMaximumSize() {
+		return new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE);
+	}
+	
 	public void addImageMouseMoveListener(ImageMouseMoveListener l) {
 		moveListeners.add(l);
 	}

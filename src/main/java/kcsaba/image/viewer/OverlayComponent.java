@@ -1,5 +1,6 @@
 package kcsaba.image.viewer;
 
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -27,4 +28,8 @@ class OverlayComponent extends JComponent {
 		}
 	}
 	
+	@Override
+	public Dimension getMaximumSize() {
+		return new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE);
+	}
 }
