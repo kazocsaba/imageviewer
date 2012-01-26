@@ -1,4 +1,4 @@
-package kcsaba.image.viewer;
+package hu.kazocsaba.imageviewer;
 
 import javax.swing.JComponent;
 
