@@ -2,7 +2,6 @@ package kcsaba.image.viewer;
 
 import java.awt.Dimension;
 import java.awt.Rectangle;
-import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
 import javax.swing.JViewport;
@@ -16,10 +15,8 @@ import javax.swing.Scrollable;
 class LayeredImageView  {
 	private final ImageComponent theImage;
 	private final JLayeredPane layeredPane;
-	private final PropertyChangeSupport propertyChangeSupport;
 	
-	public LayeredImageView(ImageComponent theImage, PropertyChangeSupport propertyChangeSupport) {
-		this.propertyChangeSupport=propertyChangeSupport;
+	public LayeredImageView(ImageComponent theImage) {
 		this.theImage = theImage;
 		layeredPane=new ScrollableLayeredPane();
 		layeredPane.setLayout(new OverlayLayout(layeredPane));

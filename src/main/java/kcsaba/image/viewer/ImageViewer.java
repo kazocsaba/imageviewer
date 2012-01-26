@@ -99,7 +99,7 @@ public class ImageViewer {
 		propertyChangeSupport=new PropertyChangeSupport(this);
 		panel=new JPanel(new BorderLayout());
 		theImage=new ImageComponent(this, propertyChangeSupport);
-		view=new LayeredImageView(theImage, propertyChangeSupport);
+		view=new LayeredImageView(theImage);
 		theImage.setImage(image);
 		scroller=new JScrollPane(view.getComponent()) {
 
@@ -578,6 +578,7 @@ public class ImageViewer {
 	 * @param clipToImage whether the function should return <code>null</code> for positions outside
 	 * the image bounds
 	 * @return the corresponding image pixel
+	 * @throws IllegalStateException if <code>clipToImage</code> is <code>true</code> but there is no image
 	 */
 	public Point pointToPixel(Point p, boolean clipToImage) {
 		return theImage.pointToPixel(p, clipToImage);
