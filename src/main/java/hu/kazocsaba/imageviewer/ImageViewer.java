@@ -441,6 +441,7 @@ public class ImageViewer {
 	 * Sets the zoom factor to use when the resize strategy is CUSTOM_ZOOM.
 	 * <p>
 	 * Note that calling this function does not change the current resize strategy.
+	 * @param newZoomFactor the new zoom factor for the CUSTOM_ZOOM strategy
 	 * @throws IllegalArgumentException if {@code newZoomFactor} is not a positive number
 	 */
 	public void setZoomFactor(double newZoomFactor) {
@@ -518,30 +519,97 @@ public class ImageViewer {
 	public void removeMouseMotionListener(MouseMotionListener l) {
 		theImage.removeMouseMotionListener(l);
 	}
-	
-	public void addImageMouseMoveListener(ImageMouseMoveListener l) {
+	/**
+	 * Adds the specified image mouse motion listener to this viewer. The listener is notified as the mouse
+	 * moves over pixels of the image. If listener <code>l</code>
+	 * is {@code null}, no exception is thrown and no action is performed.
+	 * @param l the image mouse motion listener
+	 */
+	public void addImageMouseMotionListener(ImageMouseMotionListener l) {
 		theImage.addImageMouseMoveListener(l);
 	}
 
-	public void removeImageMouseMoveListener(ImageMouseMoveListener l) {
+	/**
+	 * Removes the specified image mouse motion listener so that it no longer receives
+	 * mouse motion events from the image component of this image viewer. This method
+	 * performs no function, nor does it throw an exception, if the listener specified
+	 * by the argument was not previously added to this component. If listener
+	 * <code>l</code> is {@code null}, no exception is thrown and no action is
+	 * performed.
+	 * @param l the mouse motion listener
+	 */
+	public void removeImageMouseMotionListener(ImageMouseMotionListener l) {
 		theImage.removeImageMouseMoveListener(l);
 	}
 
+	/**
+	 * Adds the specified image mouse listener to this viewer. The listener is notified as mouse buttons are clicked
+	 * over pixels of the image. If listener <code>l</code>
+	 * is {@code null}, no exception is thrown and no action is performed.
+	 * @param l the image mouse motion listener
+	 */
 	public void addImageMouseClickListener(ImageMouseClickListener l) {
 		theImage.addImageMouseClickListener(l);
 	}
+	
+	/**
+	 * Removes the specified image mouse listener so that it no longer receives
+	 * mouse click events from the image component of this image viewer. This method
+	 * performs no function, nor does it throw an exception, if the listener specified
+	 * by the argument was not previously added to this component. If the listener
+	 * <code>l</code> is {@code null}, no exception is thrown and no action is
+	 * performed.
+	 * @param l the mouse motion listener
+	 */
 	public void removeImageMouseClickListener(ImageMouseClickListener l) {
 		theImage.removeImageMouseClickListener(l);
 	}
+	
+	/**
+	 * Adds a {@code PropertyChangeListener} to the listener list.
+	 * The same listener object may be added more than once, and will be
+	 * called as many times as it is added. If the listener is {@code null},
+	 * no exception is thrown and no action is taken.
+	 * @param l the listener to be added
+	 */
 	public void addPropertyChangeListener(PropertyChangeListener l) {
 		propertyChangeSupport.addPropertyChangeListener(l);
 	}
+	
+	/**
+	 * Remove a {@code PropertyChangeListener} from the listener list.
+	 * This removes a listener that was registered for all properties.
+	 * If the listener was added more than once, it will be notified
+	 * one less time after being removed. If the listener is {@code null},
+	 * or was never added, no exception is thrown and no action is taken.
+	 * @param l the listener to remove
+	 */
 	public void removePropertyChangeListener(PropertyChangeListener l) {
 		propertyChangeSupport.removePropertyChangeListener(l);
 	}
+	
+	/**
+	 * Adds a {@code PropertyChangeListener} for a specific property. The listener
+	 * will be invoked only when a call on firePropertyChange names that specific property.
+	 * The same listener object may be added more than once. For each property,
+	 * the listener will be invoked the number of times it was added for that property.
+	 * If the property name or the listener is null, no exception is thrown and no action is taken.
+	 * @param name the name of the property to listen on
+	 * @param l the listener to add
+	 */
 	public void addPropertyChangeListener(String name, PropertyChangeListener l) {
 		propertyChangeSupport.addPropertyChangeListener(name, l);
 	}
+	
+	/**
+	 * Remove a {@code PropertyChangeListener} from the listener list.
+	 * This removes a PropertyChangeListener that was registered for all properties.
+	 * If the listener was added more than once,
+	 * it will be notified one less time after being removed. If the listener is {@code null},
+	 * or was never added, no exception is thrown and no action is taken.
+	 * @param name the name of the property that was listened on
+	 * @param l the listener to remove
+	 */
 	public void removePropertyChangeListener(String name, PropertyChangeListener l) {
 		propertyChangeSupport.removePropertyChangeListener(name, l);
 	}

@@ -14,7 +14,7 @@ import javax.swing.JPanel;
  * coordinates) and the colour of the pixel under the cursor.
  * @author Kazó Csaba
  */
-public class DefaultStatusBar extends StatusBar implements ImageMouseMoveListener, PropertyChangeListener {
+public class DefaultStatusBar extends StatusBar implements ImageMouseMotionListener, PropertyChangeListener {
 	private final JPanel statusBar;
 	private final JLabel posLabel;
 	
@@ -76,13 +76,13 @@ public class DefaultStatusBar extends StatusBar implements ImageMouseMoveListene
 
 	@Override
 	protected void register(ImageViewer viewer) {
-		viewer.addImageMouseMoveListener(this);
+		viewer.addImageMouseMotionListener(this);
 		viewer.addPropertyChangeListener("image", this);
 	}
 
 	@Override
 	protected void unregister(ImageViewer viewer) {
-		viewer.removeImageMouseMoveListener(this);
+		viewer.removeImageMouseMotionListener(this);
 		viewer.removePropertyChangeListener("image", this);
 	}
 	

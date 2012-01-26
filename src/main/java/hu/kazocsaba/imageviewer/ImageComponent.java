@@ -33,7 +33,7 @@ class ImageComponent extends JComponent {
 	private BufferedImage image;
 	private boolean pixelatedZoom=false;
 	private double zoomFactor=1;
-	private final List<ImageMouseMoveListener> moveListeners = new ArrayList<ImageMouseMoveListener>(4);
+	private final List<ImageMouseMotionListener> moveListeners = new ArrayList<ImageMouseMotionListener>(4);
 	private final List<ImageMouseClickListener> clickListeners = new ArrayList<ImageMouseClickListener>(4);
 	private final MouseEventTranslator mouseEventTranslator = new MouseEventTranslator();
 	
@@ -93,20 +93,24 @@ class ImageComponent extends JComponent {
 		return new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE);
 	}
 	
-	public void addImageMouseMoveListener(ImageMouseMoveListener l) {
-		moveListeners.add(l);
+	public void addImageMouseMoveListener(ImageMouseMotionListener l) {
+		if (l!=null)
+			moveListeners.add(l);
 	}
 
-	public void removeImageMouseMoveListener(ImageMouseMoveListener l) {
-		moveListeners.remove(l);
+	public void removeImageMouseMoveListener(ImageMouseMotionListener l) {
+		if (l!=null)
+			moveListeners.remove(l);
 	}
 
 	public void addImageMouseClickListener(ImageMouseClickListener l) {
-		clickListeners.add(l);
+		if (l!=null)
+			clickListeners.add(l);
 	}
 
 	public void removeImageMouseClickListener(ImageMouseClickListener l) {
-		clickListeners.remove(l);
+		if (l!=null)
+			clickListeners.remove(l);
 	}
 	
 	public void setImage(BufferedImage newImage) {
@@ -401,7 +405,7 @@ class ImageComponent extends JComponent {
 
 		private void fireMouseAtPixel(int x, int y, MouseEvent ev) {
 			ImageMouseEvent e = null;
-			for (ImageMouseMoveListener imageMouseMoveListener: moveListeners) {
+			for (ImageMouseMotionListener imageMouseMoveListener: moveListeners) {
 				if (e == null)
 					e = new ImageMouseEvent(eventSource, image, x, y, ev);
 				imageMouseMoveListener.mouseMoved(e);
@@ -419,7 +423,7 @@ class ImageComponent extends JComponent {
 
 		private void fireMouseEnter(int x, int y, MouseEvent ev) {
 			ImageMouseEvent e = null;
-			for (ImageMouseMoveListener imageMouseMoveListener: moveListeners) {
+			for (ImageMouseMotionListener imageMouseMoveListener: moveListeners) {
 				if (e == null)
 					e = new ImageMouseEvent(eventSource, image, x, y, ev);
 				imageMouseMoveListener.mouseEntered(e);
@@ -428,7 +432,7 @@ class ImageComponent extends JComponent {
 
 		private void fireMouseExit() {
 			ImageMouseEvent e = null;
-			for (ImageMouseMoveListener imageMouseMoveListener: moveListeners) {
+			for (ImageMouseMotionListener imageMouseMoveListener: moveListeners) {
 				if (e == null)
 					e = new ImageMouseEvent(eventSource, image, -1, -1, null);
 				imageMouseMoveListener.mouseExited(e);
@@ -437,7 +441,7 @@ class ImageComponent extends JComponent {
 		
 		private void fireMouseDrag(int x, int y, MouseEvent ev) {
 			ImageMouseEvent e = null;
-			for (ImageMouseMoveListener imageMouseMoveListener: moveListeners) {
+			for (ImageMouseMotionListener imageMouseMoveListener: moveListeners) {
 				if (e == null)
 					e = new ImageMouseEvent(eventSource, image, x, y, ev);
 				imageMouseMoveListener.mouseDragged(e);
