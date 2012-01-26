@@ -15,12 +15,23 @@ import javax.swing.JPanel;
  * method is called. Subclasses should override this method to update the image according to the new position.
  * @author Kazó Csaba
  */
-public class ImageSequenceViewer extends JPanel {
+public class ImageSequenceViewer {
 
 	private final ImageViewer imageViewer;
 	private int number,  position;
 	private JButton forwardButton, backwardButton;
 	private JLabel locationLabel;
+	
+	private JPanel panel=new JPanel(new BorderLayout()) {
+		/**
+		* Overridden to call {@link #positionChanged()}.
+		*/
+		@Override
+		public void addNotify() {
+			super.addNotify();
+			positionChanged();
+		}
+	};
 
 	/**
 	 * Creates a new sequence viewer that can display the specified number of images.
@@ -38,13 +49,13 @@ public class ImageSequenceViewer extends JPanel {
 	 * @throws IllegalArgumentException if the number is negative or the starting position is not valid
 	 */
 	public ImageSequenceViewer(int number, int startPos) {
-		super(new BorderLayout());
 		if (number <= 0 || startPos < 0 || startPos >= number)
 			throw new IllegalArgumentException();
 		imageViewer = new ImageViewer();
 		this.number = number;
 		this.position = startPos;
-		add(imageViewer.getComponent(), BorderLayout.CENTER);
+		
+		panel.add(imageViewer.getComponent(), BorderLayout.CENTER);
 
 		forwardButton = new JButton(">");
 		backwardButton = new JButton("<");
@@ -68,17 +79,17 @@ public class ImageSequenceViewer extends JPanel {
 			}
 		});
 
-		add(locationPanel, BorderLayout.NORTH);
+		panel.add(locationPanel, BorderLayout.NORTH);
 
 		setPosition(position);
 	}
+
 	/**
-	 * Overridden to call {@link #positionChanged()}.
+	 * Returns the Swing component for this sequence viewer.
+	 * @return the component
 	 */
-	@Override
-	public void addNotify() {
-		super.addNotify();
-		positionChanged();
+	public JComponent getComponent() {
+		return panel;
 	}
 	
 	/**
@@ -107,7 +118,7 @@ public class ImageSequenceViewer extends JPanel {
 		updateLocationDefinition(position);
 		forwardButton.setEnabled(position < number - 1);
 		backwardButton.setEnabled(position > 0);
-		if (getParent()!=null) positionChanged();
+		if (panel.getParent()!=null) positionChanged();
 	}
 
 	/**
