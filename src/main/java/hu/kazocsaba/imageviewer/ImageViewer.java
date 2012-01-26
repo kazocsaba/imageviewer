@@ -464,10 +464,17 @@ public class ImageViewer {
 	 * @param overlay the overlay to add
 	 * @param layer the layer to add the overlay to; higher layers are on top of lower layers;
 	 * the image resides in layer 0
-	 * @throws IllegalArgumentException if the overlay is already added to a viewer.
 	 */
 	public void addOverlay(Overlay overlay, int layer) {
 		view.addOverlay(overlay, layer);
+	}
+	
+	/**
+	 * Adds an overlay to layer 1.
+	 * @param overlay the overlay to add
+	 */
+	public void addOverlay(Overlay overlay) {
+		addOverlay(overlay, 1);
 	}
 	/**
 	 * Removes an overlay from the image viewer.

@@ -1,5 +1,6 @@
 package hu.kazocsaba.imageviewer;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import javax.swing.JComponent;
@@ -33,13 +34,10 @@ class LayeredImageView  {
 	 * @param overlay the overlay to add
 	 * @param layer the layer to add the overlay to; higher layers are on top of lower layers;
 	 * the image resides in layer 0
-	 * @throws IllegalArgumentException if the overlay is already added to a viewer.
 	 */
 	public void addOverlay(Overlay overlay, int layer) {
-		if (overlay.overlayComponent!=null)
-			throw new IllegalArgumentException("Overlay already added to a viewer");
 		OverlayComponent c=new OverlayComponent(overlay, theImage);
-		overlay.setOverlayComponent(c);
+		overlay.addOverlayComponent(c);
 		layeredPane.add(c, Integer.valueOf(layer));
 		layeredPane.revalidate();
 		layeredPane.repaint();
@@ -50,12 +48,15 @@ class LayeredImageView  {
 	 * @throws IllegalArgumentException if the overlay is not in the image viewer
 	 */
 	public void removeOverlay(Overlay overlay) {
-		if (overlay.overlayComponent.theImage!=theImage)
-			throw new IllegalArgumentException("Overlay not part of this viewer");
-		layeredPane.remove(overlay.overlayComponent);
-		overlay.setOverlayComponent(null);
-		layeredPane.revalidate();
-		layeredPane.repaint();
+		for (Component c: layeredPane.getComponents()) {
+			if (c instanceof OverlayComponent && ((OverlayComponent)c).overlay==overlay) {
+				overlay.removeOverlayComponent((OverlayComponent)c);
+				layeredPane.remove(c);
+				layeredPane.revalidate();
+				layeredPane.repaint();
+			}
+		}
+		throw new IllegalArgumentException("Overlay not part of this viewer");
 	}
 	private class ScrollableLayeredPane extends JLayeredPane implements Scrollable {
 

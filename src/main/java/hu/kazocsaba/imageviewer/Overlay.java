@@ -3,6 +3,8 @@ package hu.kazocsaba.imageviewer;
 import java.awt.Graphics2D;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * An overlay is a layer on top of an image. It can be used to add annotations, arbitrary
@@ -30,15 +32,18 @@ import java.awt.image.BufferedImage;
  * @author Kazó Csaba
  */
 public abstract class Overlay {
-	OverlayComponent overlayComponent;
-	final void setOverlayComponent(OverlayComponent c) {
-		overlayComponent=c;
+	List<OverlayComponent> overlayComponents=new ArrayList<OverlayComponent>(1);
+	final void addOverlayComponent(OverlayComponent c) {
+		overlayComponents.add(c);
+	}
+	final void removeOverlayComponent(OverlayComponent c) {
+		overlayComponents.remove(c);
 	}
 	/**
 	 * Causes the overlay to be repainted.
 	 */
 	public void repaint() {
-		if (overlayComponent!=null)
+		for (OverlayComponent overlayComponent: overlayComponents)
 			overlayComponent.repaint();
 	}
 	/**
