@@ -25,8 +25,8 @@ you use a project management system which can fetch dependencies
 from there, you can just add the library as a dependency. E.g.
 in Maven:
 
-  <dependency>
-    <groupId>hu.kazocsaba</groupId>
-    <artifactId>image-viewer</artifactId>
-    <version>a.b.c</version>
-  </dependency>
+	<dependency>
+		<groupId>hu.kazocsaba</groupId>
+		<artifactId>image-viewer</artifactId>
+		<version>a.b.c</version>
+	</dependency>
