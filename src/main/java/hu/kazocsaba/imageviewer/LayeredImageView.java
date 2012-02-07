@@ -36,6 +36,7 @@ class LayeredImageView  {
 	 * the image resides in layer 0
 	 */
 	public void addOverlay(Overlay overlay, int layer) {
+		if (overlay==null) throw new NullPointerException();
 		OverlayComponent c=new OverlayComponent(overlay, theImage);
 		overlay.addOverlayComponent(c);
 		layeredPane.add(c, Integer.valueOf(layer));
@@ -48,12 +49,14 @@ class LayeredImageView  {
 	 * @throws IllegalArgumentException if the overlay is not in the image viewer
 	 */
 	public void removeOverlay(Overlay overlay) {
+		if (overlay==null) throw new NullPointerException();
 		for (Component c: layeredPane.getComponents()) {
 			if (c instanceof OverlayComponent && ((OverlayComponent)c).overlay==overlay) {
 				overlay.removeOverlayComponent((OverlayComponent)c);
 				layeredPane.remove(c);
 				layeredPane.revalidate();
 				layeredPane.repaint();
+				return;
 			}
 		}
 		throw new IllegalArgumentException("Overlay not part of this viewer");
