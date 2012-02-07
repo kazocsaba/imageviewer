@@ -1,6 +1,8 @@
 Changelog
 =========
 
+Version 1.0.1 (2012.02.07): Fixed removeOverlay.
+
 Version 1.0.0 (2012.01.26):
 
 - Moved everything to package `hu.kazocsaba.imageviewer`.
