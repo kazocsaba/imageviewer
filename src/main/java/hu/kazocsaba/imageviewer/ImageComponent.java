@@ -116,6 +116,7 @@ class ImageComponent extends JComponent {
 	public void setImage(BufferedImage newImage) {
 		BufferedImage oldImage = image;
 		image = newImage;
+		cachedImageChanged=true;
 		if (oldImage != newImage &&
 				(oldImage == null || newImage == null || oldImage.getWidth() != newImage.getWidth() ||
 				oldImage.getHeight() != newImage.getHeight()))
@@ -147,6 +148,7 @@ class ImageComponent extends JComponent {
 		if (pixelatedZoom == this.pixelatedZoom)
 			return;
 		this.pixelatedZoom = pixelatedZoom;
+		cachedImageChanged=true;
 		repaint();
 		propertyChangeSupport.firePropertyChange("pixelatedZoom", !pixelatedZoom, pixelatedZoom);
 	}
@@ -256,15 +258,69 @@ class ImageComponent extends JComponent {
 		return p;
 	}
 	
-	@Override
-	protected void paintComponent(Graphics g) {
-		Graphics2D gg = (Graphics2D) g.create();
+	BufferedImage cachedImage=null;
+	boolean cachedImageChanged=false;
+	AffineTransform cachedTransform;
+	
+	private void doPaint(Graphics2D gg, AffineTransform imageTransform) {
 		gg.setColor(getBackground());
 		gg.fillRect(0, 0, getWidth(), getHeight());
-		if (image!=null) {
-			paint(gg);
+
+		gg.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+		if (pixelatedZoom && imageTransform.getScaleX()>=1)
+			gg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+		else
+			gg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+
+		gg.drawImage(image, imageTransform, this);
+	}
+	private void ensureCachedValid(AffineTransform imageTransform) {
+		boolean cacheValid;
+		
+		// create the image if necessary; if an existing one is sufficiently large, use it
+		if (cachedImage==null || cachedImage.getWidth()<getWidth() || cachedImage.getHeight()<getHeight()) {
+			cachedImage=getGraphicsConfiguration().createCompatibleImage(getWidth(), getHeight());
+			cacheValid=false;
+		} else {
+			cacheValid = cachedTransform.equals(imageTransform) && !cachedImageChanged;
 		}
-		gg.dispose();
+
+
+		if (!cacheValid) {
+			Graphics2D gg=cachedImage.createGraphics();
+			doPaint(gg, imageTransform);
+			gg.dispose();
+			cachedImageChanged=false;
+			cachedTransform=new AffineTransform(imageTransform);
+		}
+	}
+	
+	@Override
+	protected void paintComponent(Graphics g) {
+		if (image==null) {
+			Graphics2D gg=(Graphics2D)g.create();
+			gg.setColor(getBackground());
+			gg.fillRect(0, 0, getWidth(), getHeight());
+			gg.dispose();
+			return;
+		}
+		
+		AffineTransform imageTransform = getImageTransform();
+		
+		if (imageTransform.getScaleX()<1) {
+			/* 
+			 * We're shrinking the image; instead of letting the Graphics object do it every time, we do it and cache
+			 * the result.
+			 */
+			ensureCachedValid(imageTransform);
+			g.drawImage(cachedImage, 0, 0, this);
+		} else {
+			// draw the image directly
+			Graphics2D gg=(Graphics2D)g.create();
+			doPaint(gg, imageTransform);
+			gg.dispose();
+		}
+		
 	}
 
 	/**
@@ -299,17 +355,6 @@ class ImageComponent extends JComponent {
 		tr.setToTranslation((getWidth()-image.getWidth()*currentZoom)/2.0, (getHeight()-image.getHeight()*currentZoom)/2.0);
 		tr.scale(currentZoom, currentZoom);
 		return tr;
-	}
-
-	private void paint(Graphics2D g) {
-		g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-		AffineTransform imageTransform = getImageTransform();
-		if (pixelatedZoom && (imageTransform.getScaleX()>=1 || imageTransform.getScaleY()>=1)) {
-			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-		} else {
-			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-		}
-		g.drawImage(image, imageTransform, this);
 	}
 
 	private double getSizeRatio() {
