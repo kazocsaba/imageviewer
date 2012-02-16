@@ -89,8 +89,10 @@ public class PixelMarkerOverlay extends Overlay {
 	 * Removes all pixels from the overlay, clearing the selection.
 	 */
 	public void clear() {
-		points.clear();
-		repaint();
+		if (!points.isEmpty()) {
+			points.clear();
+			repaint();
+		}
 	}
 
 	@Override
