@@ -22,6 +22,7 @@ class LayeredImageView  {
 		layeredPane=new ScrollableLayeredPane();
 		layeredPane.setLayout(new OverlayLayout(layeredPane));
 		layeredPane.add(theImage, Integer.valueOf(0));
+		layeredPane.setOpaque(true);
 	}
 	/**
 	 * Returns the component for this layered view.
