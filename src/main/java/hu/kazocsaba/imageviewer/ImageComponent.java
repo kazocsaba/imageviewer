@@ -32,6 +32,7 @@ class ImageComponent extends JComponent {
 	private ResizeStrategy resizeStrategy = ResizeStrategy.NO_RESIZE;
 	private BufferedImage image;
 	private boolean pixelatedZoom=false;
+	private Object interpolationType=RenderingHints.VALUE_INTERPOLATION_BICUBIC;
 	private double zoomFactor=1;
 	private final List<ImageMouseMotionListener> moveListeners = new ArrayList<ImageMouseMotionListener>(4);
 	private final List<ImageMouseClickListener> clickListeners = new ArrayList<ImageMouseClickListener>(4);
@@ -142,6 +143,25 @@ class ImageComponent extends JComponent {
 	
 	public ResizeStrategy getResizeStrategy() {
 		return resizeStrategy;
+	}
+	
+	public void setInterpolationType(Object type) {
+		if (interpolationType==type)
+			return;
+		if (
+				type!=RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR &&
+				type!=RenderingHints.VALUE_INTERPOLATION_BILINEAR &&
+				type!=RenderingHints.VALUE_INTERPOLATION_BICUBIC)
+			throw new IllegalArgumentException("Invalid interpolation type; use one of the RenderingHints constants");
+		Object old=this.interpolationType;
+		this.interpolationType=type;
+		cachedImageChanged=true;
+		repaint();
+		propertyChangeSupport.firePropertyChange("interpolationType", old, type);
+	}
+	
+	public Object getInterpolationType() {
+		return interpolationType;
 	}
 	
 	public void setPixelatedZoom(boolean pixelatedZoom) {
@@ -270,7 +290,7 @@ class ImageComponent extends JComponent {
 		if (pixelatedZoom && imageTransform.getScaleX()>=1)
 			gg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 		else
-			gg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+			gg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, interpolationType);
 
 		gg.drawImage(image, imageTransform, this);
 	}

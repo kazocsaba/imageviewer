@@ -36,6 +36,8 @@ public class ImageViewerUtil {
 				target.setZoomFactor(source.getZoomFactor());
 			} else if ("pixelatedZoom".equals(evt.getPropertyName())) {
 				target.setPixelatedZoom(source.isPixelatedZoom());
+			} else if ("interpolationType".equals(evt.getPropertyName())) {
+				target.setInterpolationType(source.getInterpolationType());
 			}
 		}
 		

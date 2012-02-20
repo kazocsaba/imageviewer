@@ -430,6 +430,34 @@ public class ImageViewer {
 	}
 	
 	/**
+	 * Returns the current interpolation type.
+	 * @return the interpolation type
+	 * @see #setInterpolationType(Object)
+	 */
+	public Object getInterpolationType() {
+		return theImage.getInterpolationType();
+	}
+	
+	/**
+	 * Sets the interpolation type to use when resizing images. See {@link java.awt.RenderingHints#KEY_INTERPOLATION}
+	 * for details. The default value is {@code RenderingHints.VALUE_INTERPOLATION_BICUBIC}.
+	 * <p>
+	 * The allowed values are:
+	 * <ul>
+	 * <li>{@link java.awt.RenderingHints#VALUE_INTERPOLATION_NEAREST_NEIGHBOR}
+	 * <li>{@link java.awt.RenderingHints#VALUE_INTERPOLATION_BILINEAR}
+	 * <li>{@link java.awt.RenderingHints#VALUE_INTERPOLATION_BICUBIC}
+	 * </ul>
+	 * Note: when the {@code pixelatedZoom} property is set to true and the image is enlarged, then the nearest
+	 * neighbor method is used regardless of this setting.
+	 * @param type the interpolation type to use when resizing images
+	 * @throws IllegalArgumentException if the parameter is not one of the allowed values
+	 */
+	public void setInterpolationType(Object type) {
+		theImage.setInterpolationType(type);
+	}
+	
+	/**
 	 * Returns the zoom factor used when resize strategy is CUSTOM_ZOOM.
 	 * @return the custom zoom factor
 	 */
