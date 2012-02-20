@@ -37,6 +37,7 @@ class ImageComponent extends JComponent {
 	private final List<ImageMouseMotionListener> moveListeners = new ArrayList<ImageMouseMotionListener>(4);
 	private final List<ImageMouseClickListener> clickListeners = new ArrayList<ImageMouseClickListener>(4);
 	private final MouseEventTranslator mouseEventTranslator = new MouseEventTranslator();
+	private final PaintManager paintManager = new PaintManager();
 	
 	/* Handles repositioning the scroll pane when the image is resized so that the same are remains visible. */
 	class Rescroller implements Runnable {
@@ -117,7 +118,7 @@ class ImageComponent extends JComponent {
 	public void setImage(BufferedImage newImage) {
 		BufferedImage oldImage = image;
 		image = newImage;
-		cachedImageChanged=true;
+		paintManager.notifyChanged();
 		if (oldImage != newImage &&
 				(oldImage == null || newImage == null || oldImage.getWidth() != newImage.getWidth() ||
 				oldImage.getHeight() != newImage.getHeight()))
@@ -155,7 +156,7 @@ class ImageComponent extends JComponent {
 			throw new IllegalArgumentException("Invalid interpolation type; use one of the RenderingHints constants");
 		Object old=this.interpolationType;
 		this.interpolationType=type;
-		cachedImageChanged=true;
+		paintManager.notifyChanged();
 		repaint();
 		propertyChangeSupport.firePropertyChange("interpolationType", old, type);
 	}
@@ -168,7 +169,7 @@ class ImageComponent extends JComponent {
 		if (pixelatedZoom == this.pixelatedZoom)
 			return;
 		this.pixelatedZoom = pixelatedZoom;
-		cachedImageChanged=true;
+		paintManager.notifyChanged();
 		repaint();
 		propertyChangeSupport.firePropertyChange("pixelatedZoom", !pixelatedZoom, pixelatedZoom);
 	}
@@ -277,70 +278,10 @@ class ImageComponent extends JComponent {
 		}
 		return p;
 	}
-	
-	BufferedImage cachedImage=null;
-	boolean cachedImageChanged=false;
-	AffineTransform cachedTransform;
-	
-	private void doPaint(Graphics2D gg, AffineTransform imageTransform) {
-		gg.setColor(getBackground());
-		gg.fillRect(0, 0, getWidth(), getHeight());
 
-		gg.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-		if (pixelatedZoom && imageTransform.getScaleX()>=1)
-			gg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-		else
-			gg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, interpolationType);
-
-		gg.drawImage(image, imageTransform, this);
-	}
-	private void ensureCachedValid(AffineTransform imageTransform) {
-		boolean cacheValid;
-		
-		// create the image if necessary; if an existing one is sufficiently large, use it
-		if (cachedImage==null || cachedImage.getWidth()<getWidth() || cachedImage.getHeight()<getHeight()) {
-			cachedImage=getGraphicsConfiguration().createCompatibleImage(getWidth(), getHeight());
-			cacheValid=false;
-		} else {
-			cacheValid = cachedTransform.equals(imageTransform) && !cachedImageChanged;
-		}
-
-
-		if (!cacheValid) {
-			Graphics2D gg=cachedImage.createGraphics();
-			doPaint(gg, imageTransform);
-			gg.dispose();
-			cachedImageChanged=false;
-			cachedTransform=new AffineTransform(imageTransform);
-		}
-	}
-	
 	@Override
 	protected void paintComponent(Graphics g) {
-		if (image==null) {
-			Graphics2D gg=(Graphics2D)g.create();
-			gg.setColor(getBackground());
-			gg.fillRect(0, 0, getWidth(), getHeight());
-			gg.dispose();
-			return;
-		}
-		
-		AffineTransform imageTransform = getImageTransform();
-		
-		if (imageTransform.getScaleX()<1) {
-			/* 
-			 * We're shrinking the image; instead of letting the Graphics object do it every time, we do it and cache
-			 * the result.
-			 */
-			ensureCachedValid(imageTransform);
-			g.drawImage(cachedImage, 0, 0, this);
-		} else {
-			// draw the image directly
-			Graphics2D gg=(Graphics2D)g.create();
-			doPaint(gg, imageTransform);
-			gg.dispose();
-		}
-		
+		paintManager.paintComponent(g);
 	}
 
 	/**
@@ -518,5 +459,80 @@ class ImageComponent extends JComponent {
 
 		@Override
 		public void mouseReleased(MouseEvent e) {}
+	}
+	
+	/**
+	 * Helper class that manages the actual painting.
+	 */
+	private class PaintManager {
+		BufferedImage cachedImage=null;
+		boolean cachedImageChanged=false;
+		AffineTransform cachedTransform;
+
+		private void doPaint(Graphics2D gg, AffineTransform imageTransform) {
+			gg.setColor(getBackground());
+			gg.fillRect(0, 0, getWidth(), getHeight());
+
+			gg.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+			if (pixelatedZoom && imageTransform.getScaleX()>=1)
+				gg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+			else
+				gg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, interpolationType);
+
+			gg.drawImage(image, imageTransform, ImageComponent.this);
+		}
+		private void ensureCachedValid(AffineTransform imageTransform) {
+			boolean cacheValid;
+
+			// create the image if necessary; if the existing one is sufficiently large, use it
+			if (cachedImage==null || cachedImage.getWidth()<getWidth() || cachedImage.getHeight()<getHeight()) {
+				cachedImage=getGraphicsConfiguration().createCompatibleImage(getWidth(), getHeight());
+				cacheValid=false;
+			} else {
+				cacheValid = cachedTransform.equals(imageTransform) && !cachedImageChanged;
+			}
+
+
+			if (!cacheValid) {
+				Graphics2D gg=cachedImage.createGraphics();
+				doPaint(gg, imageTransform);
+				gg.dispose();
+				cachedImageChanged=false;
+				cachedTransform=new AffineTransform(imageTransform);
+			}
+		}
+		/**
+		 * Called when a property which affects how the component is painted changes. This invalidates the cache and causes
+		 * it to be redrawn upon the next paint request.
+		 */
+		public void notifyChanged() {
+			cachedImageChanged=true;
+		}
+		public void paintComponent(Graphics g) {
+			if (image==null) {
+				Graphics2D gg=(Graphics2D)g.create();
+				gg.setColor(getBackground());
+				gg.fillRect(0, 0, getWidth(), getHeight());
+				gg.dispose();
+				return;
+			}
+
+			AffineTransform imageTransform = getImageTransform();
+
+			if (imageTransform.getScaleX()<1) {
+				/* 
+				* We're shrinking the image; instead of letting the Graphics object do it every time, we do it and cache
+				* the result.
+				*/
+				ensureCachedValid(imageTransform);
+				g.drawImage(cachedImage, 0, 0, ImageComponent.this);
+			} else {
+				// draw the image directly
+				Graphics2D gg=(Graphics2D)g.create();
+				doPaint(gg, imageTransform);
+				gg.dispose();
+			}
+
+		}
 	}
 }
