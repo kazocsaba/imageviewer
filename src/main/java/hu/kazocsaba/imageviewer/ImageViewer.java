@@ -386,7 +386,9 @@ public class ImageViewer {
 		return panel;
 	}
 	/**
-	 * Sets the image displayed by the viewer.
+	 * Sets the image displayed by the viewer. If the argument is the same object as the image currently being displayed,
+	 * then this method will trigger a refresh. If you modify the image shown by the viewer, use this function to notify
+	 * the component and cause it to update.
 	 * @param image the new image to display; if <code>null</code> then no image is displayed
 	 */
 	public void setImage(BufferedImage image) {
