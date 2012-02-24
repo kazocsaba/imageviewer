@@ -519,7 +519,7 @@ class ImageComponent extends JComponent {
 
 			AffineTransform imageTransform = getImageTransform();
 
-			if (imageTransform.getScaleX()<1) {
+			if (imageTransform.getScaleX()<1 && interpolationType!=RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR) {
 				/* 
 				* We're shrinking the image; instead of letting the Graphics object do it every time, we do it and cache
 				* the result.
