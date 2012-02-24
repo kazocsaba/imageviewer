@@ -352,11 +352,12 @@ public class ImageViewer {
 		this.statusBar=statusBar;
 		if (this.statusBar!=null) {
 			this.statusBar.setImageViewer(this);
-			panel.add(this.statusBar.getComponent(), BorderLayout.SOUTH);
+			if (statusBarVisible) {
+				panel.add(this.statusBar.getComponent(), BorderLayout.SOUTH);
+				panel.revalidate();
+				panel.repaint();
+			}
 		}
-		this.statusBar.getComponent().setVisible(statusBarVisible);
-		panel.revalidate();
-		panel.repaint();
 		propertyChangeSupport.firePropertyChange("statusBar", oldStatusBar, statusBar);
 	}
 	/**
@@ -365,8 +366,14 @@ public class ImageViewer {
 	 */
 	public void setStatusBarVisible(boolean statusBarVisible) {
 		if (this.statusBarVisible == statusBarVisible) return;
-		if (statusBar!=null)
-			statusBar.getComponent().setVisible(statusBarVisible);
+		if (statusBar!=null) {
+			if (statusBarVisible)
+				panel.add(statusBar.getComponent(), BorderLayout.SOUTH);
+			else
+				panel.remove(statusBar.getComponent());
+			panel.revalidate();
+			panel.repaint();
+		}
 		boolean prev = this.statusBarVisible;
 		this.statusBarVisible = statusBarVisible;
 		propertyChangeSupport.firePropertyChange("statusBarVisible", prev, statusBarVisible);
