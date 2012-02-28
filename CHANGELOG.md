@@ -1,6 +1,13 @@
 Changelog
 =========
 
+Version 1.1.0 (2012.02.28):
+
+- **Changed the default resize strategy to SHRINK_TO_FIT.**
+- Enhancements to the 'save image' dialog: help text and image file filter.
+- New property: interpolationType.
+- Various performance improvements.
+
 Version 1.0.1 (2012.02.07): Fixed removeOverlay.
 
 Version 1.0.0 (2012.01.26):
