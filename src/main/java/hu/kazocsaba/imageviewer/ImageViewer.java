@@ -496,6 +496,9 @@ public class ImageViewer {
 	 * <li>{@link java.awt.RenderingHints#VALUE_INTERPOLATION_BILINEAR}
 	 * <li>{@link java.awt.RenderingHints#VALUE_INTERPOLATION_BICUBIC} (default)
 	 * </ul>
+	 * Changing the interpolation type to bilinear or nearest neighbor improves painting performance when the image
+	 * needs to be resized.
+	 * <p>
 	 * Note: when the {@code pixelatedZoom} property is set to true and the image is enlarged, then the nearest
 	 * neighbor method is used regardless of this setting.
 	 * @param type the interpolation type to use when resizing images
