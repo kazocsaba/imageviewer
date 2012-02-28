@@ -29,7 +29,7 @@ import javax.swing.event.MouseInputListener;
  * @author Kazó Csaba
  */
 class ImageComponent extends JComponent {
-	private ResizeStrategy resizeStrategy = ResizeStrategy.NO_RESIZE;
+	private ResizeStrategy resizeStrategy = ResizeStrategy.SHRINK_TO_FIT;
 	private BufferedImage image;
 	private boolean pixelatedZoom=false;
 	private Object interpolationType=RenderingHints.VALUE_INTERPOLATION_BICUBIC;
