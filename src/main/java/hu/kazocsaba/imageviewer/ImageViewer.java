@@ -399,7 +399,7 @@ public class ImageViewer {
 		propertyChangeSupport.firePropertyChange("statusBar", oldStatusBar, statusBar);
 	}
 	/**
-	 * Sets whether the status bar is visible.
+	 * Sets whether the status bar is visible. The status bar is hidden by default.
 	 * @param statusBarVisible true, if the status bar should be visible; false otherwise
 	 */
 	public void setStatusBarVisible(boolean statusBarVisible) {
@@ -417,7 +417,7 @@ public class ImageViewer {
 		propertyChangeSupport.firePropertyChange("statusBarVisible", prev, statusBarVisible);
 	}
 	/**
-	 * Returns whether the status bar is set to be visible.
+	 * Returns whether the status bar is set to be visible. The status bar is hidden by default.
 	 * @return the statusBarVisible property
 	 */
 	public boolean isStatusBarVisible() {
@@ -447,14 +447,14 @@ public class ImageViewer {
 		return theImage.getImage();
 	}
 	/**
-	 * Sets the resize strategy this viewer should use.
+	 * Sets the resize strategy this viewer should use. The default is {@link ResizeStrategy#SHRINK_TO_FIT}.
 	 * @param resizeStrategy the new resize strategy
 	 */
 	public void setResizeStrategy(ResizeStrategy resizeStrategy) {
 		theImage.setResizeStrategy(resizeStrategy);
 	}
 	/**
-	 * Returns the current resize strategy.
+	 * Returns the current resize strategy. The default is {@link ResizeStrategy#SHRINK_TO_FIT}.
 	 * @return the current resize strategy
 	 */
 	public ResizeStrategy getResizeStrategy() {
@@ -463,13 +463,14 @@ public class ImageViewer {
 	
 	/**
 	 * Sets whether the image should be resized with nearest neighbor interpolation when it is expanded.
+	 * The default is {@code false}.
 	 * @param pixelatedZoom the new value of the pixelatedZoom property
 	 */
 	public void setPixelatedZoom(boolean pixelatedZoom) {
 		theImage.setPixelatedZoom(pixelatedZoom);
 	}
 	/**
-	 * Returns the current pixelated zoom setting.
+	 * Returns the current pixelated zoom setting. The default is {@code false}.
 	 * @return the current pixelated zoom setting
 	 */
 	public boolean isPixelatedZoom() {
@@ -477,7 +478,7 @@ public class ImageViewer {
 	}
 	
 	/**
-	 * Returns the current interpolation type.
+	 * Returns the current interpolation type. The default is {@link java.awt.RenderingHints#VALUE_INTERPOLATION_BICUBIC}.
 	 * @return the interpolation type
 	 * @see #setInterpolationType(Object)
 	 */
@@ -493,7 +494,7 @@ public class ImageViewer {
 	 * <ul>
 	 * <li>{@link java.awt.RenderingHints#VALUE_INTERPOLATION_NEAREST_NEIGHBOR}
 	 * <li>{@link java.awt.RenderingHints#VALUE_INTERPOLATION_BILINEAR}
-	 * <li>{@link java.awt.RenderingHints#VALUE_INTERPOLATION_BICUBIC}
+	 * <li>{@link java.awt.RenderingHints#VALUE_INTERPOLATION_BICUBIC} (default)
 	 * </ul>
 	 * Note: when the {@code pixelatedZoom} property is set to true and the image is enlarged, then the nearest
 	 * neighbor method is used regardless of this setting.
@@ -505,7 +506,7 @@ public class ImageViewer {
 	}
 	
 	/**
-	 * Returns the zoom factor used when resize strategy is CUSTOM_ZOOM.
+	 * Returns the zoom factor used when resize strategy is CUSTOM_ZOOM. The default value is 1.
 	 * @return the custom zoom factor
 	 */
 	public double getZoomFactor() {
@@ -513,7 +514,7 @@ public class ImageViewer {
 	}
 	
 	/**
-	 * Sets the zoom factor to use when the resize strategy is CUSTOM_ZOOM.
+	 * Sets the zoom factor to use when the resize strategy is CUSTOM_ZOOM. The default value is 1.
 	 * <p>
 	 * Note that calling this function does not change the current resize strategy.
 	 * @param newZoomFactor the new zoom factor for the CUSTOM_ZOOM strategy
