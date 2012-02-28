@@ -2,6 +2,7 @@ package hu.kazocsaba.imageviewer;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
@@ -19,9 +20,11 @@ import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -31,6 +34,7 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JViewport;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  * A general purpose image viewer component.
@@ -61,6 +65,8 @@ public class ImageViewer {
 	 * the current directory across components is fine.
 	 */
 	private static JFileChooser saveChooser;
+	private static JButton saveChooserHelpButton;
+	private static JLabel saveChooserHelpLabel;
 
 	private MouseListener contextMenuListener = new MouseAdapter() {
 		private void showPopup(MouseEvent e) {
@@ -281,8 +287,40 @@ public class ImageViewer {
 			public void actionPerformed(ActionEvent e) {
 				if (saveChooser==null) {
 					saveChooser=new JFileChooser();
+					saveChooserHelpLabel=new JLabel();
+					saveChooserHelpLabel.setText("<html>If the file name ends<br>with '.png' or '.jpg',<br>then the appropriate<br>format is used.<br>Otherwise '.png' is<br>appended to the name.");
+					saveChooserHelpLabel.setFont(saveChooserHelpLabel.getFont().deriveFont(10f));
+					saveChooserHelpButton=new JButton("?");
+					saveChooserHelpButton.setMargin(new Insets(0, 2, 0, 2));
+					saveChooserHelpButton.addActionListener(new ActionListener() {
+
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							saveChooser.getAccessory().removeAll();
+							saveChooser.getAccessory().add(saveChooserHelpLabel);
+							saveChooser.revalidate();
+							saveChooser.repaint();
+						}
+					});
+					saveChooserHelpLabel.addMouseListener(new MouseAdapter() {
+
+						@Override
+						public void mouseClicked(MouseEvent e) {
+							saveChooser.getAccessory().removeAll();
+							saveChooser.getAccessory().add(saveChooserHelpButton);
+							saveChooser.revalidate();
+							saveChooser.repaint();
+						}
+						
+					});
+					saveChooser.setAccessory(new JPanel());
 					saveChooser.setDialogTitle("Save image...");
+					
+					saveChooser.setFileFilter(new FileNameExtensionFilter("JPG and PNG images", "jpg", "png"));
 				}
+				// reset to show the help button with every new dialog
+				saveChooser.getAccessory().removeAll();
+				saveChooser.getAccessory().add(saveChooserHelpButton);
 				if (JFileChooser.APPROVE_OPTION==saveChooser.showSaveDialog(imageViewer.getComponent())) {
 					File f=saveChooser.getSelectedFile();
 					BufferedImage image=imageViewer.getImage();
