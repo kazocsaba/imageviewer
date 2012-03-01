@@ -1,6 +1,13 @@
 Changelog
 =========
 
+Version 1.1.1 (2012.03.01):
+
+- Enhanced DefaultStatusBar to display alpha too, and to use a shorter display format when there's not enough room.
+- Added a message about the error when saving the image failed.
+- Fixed exception when calling certain methods on a viewer before it is shown.
+- Fixed ImageViewerUtil.synchronizeViewers. (It didn't use to synchronize current state, only future changes.)
+
 Version 1.1.0 (2012.02.28):
 
 - **Changed the default resize strategy to SHRINK_TO_FIT.**
