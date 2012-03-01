@@ -45,7 +45,7 @@ class ImageComponent extends JComponent {
 		private BufferedImage preparedImage;
 		
 		void prepare() {
-			if (preparedCenter==null && image!=null) {
+			if (preparedCenter==null && image!=null && hasSize()) {
 				Rectangle viewRect=((JViewport)SwingUtilities.getAncestorOfClass(JViewport.class, ImageComponent.this)).getViewRect();
 				preparedCenter=new Point(viewRect.x+viewRect.width/2, viewRect.y+viewRect.height/2);
 				try {
@@ -60,13 +60,14 @@ class ImageComponent extends JComponent {
 
 		@Override
 		public void run() {
-			if (preparedImage==image) {
-				JViewport viewport = (JViewport)SwingUtilities.getAncestorOfClass(JViewport.class, ImageComponent.this);
-				Dimension viewSize=(viewport).getExtentSize();
-				getImageTransform().transform(preparedCenter, preparedCenter);
-				Rectangle view = new Rectangle(preparedCenter.x-viewSize.width/2, preparedCenter.y-viewSize.height/2, viewSize.width, viewSize.height);
-				scrollRectToVisible(view);
-				
+			if (preparedImage==image && hasSize()) {
+				if (hasSize()) {
+					JViewport viewport = (JViewport)SwingUtilities.getAncestorOfClass(JViewport.class, ImageComponent.this);
+					Dimension viewSize=(viewport).getExtentSize();
+					getImageTransform().transform(preparedCenter, preparedCenter);
+					Rectangle view = new Rectangle(preparedCenter.x-viewSize.width/2, preparedCenter.y-viewSize.height/2, viewSize.width, viewSize.height);
+					scrollRectToVisible(view);
+				}
 				preparedCenter=null;
 			}
 		}
@@ -88,6 +89,10 @@ class ImageComponent extends JComponent {
 		this.propertyChangeSupport=propertyChangeSupport;
 		mouseEventTranslator.register(this);
 		setOpaque(true);
+	}
+	
+	private boolean hasSize() {
+		return getWidth()>0 && getHeight()>0;
 	}
 	
 	@Override
@@ -263,6 +268,8 @@ class ImageComponent extends JComponent {
 	 * @param clipToImage whether the function should return <code>null</code> for positions outside
 	 * the image bounds
 	 * @return the corresponding image pixel
+	 * @throws IllegalStateException if there is no image set or if the size of the viewer is 0 (for example because
+	 * it is not in a visible component)
 	 */
 	public Point pointToPixel(Point p, boolean clipToImage) {
 		Point2D.Double fp=new Point2D.Double(p.x+.5, p.y+.5);
@@ -291,10 +298,12 @@ class ImageComponent extends JComponent {
 	 * The <code>AffineTransform</code>
 	 * instance returned by this method should not be modified.
 	 * @return the transformation applied to the image before painting
-	 * @throws IllegalStateException if there is no image set
+	 * @throws IllegalStateException if there is no image set or if the size of the viewer is 0 (for example because
+	 * it is not in a visible component)
 	 */
 	public AffineTransform getImageTransform() {
 		if (getImage()==null) throw new IllegalStateException("No image");
+		if (!hasSize()) throw new IllegalStateException("Viewer size is zero");
 		double currentZoom;
 		switch (resizeStrategy) {
 			case NO_RESIZE:

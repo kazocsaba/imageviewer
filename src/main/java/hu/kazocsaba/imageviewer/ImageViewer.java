@@ -533,6 +533,8 @@ public class ImageViewer {
 	 * The <code>AffineTransform</code>
 	 * instance returned by this method should not be modified.
 	 * @return the transformation applied to the image before painting
+	 * @throws IllegalStateException if there is no image set or if the size of the viewer is 0 (for example because
+	 * it is not in a visible component)
 	 */
 	public AffineTransform getImageTransform() {
 		return theImage.getImageTransform();
@@ -732,7 +734,8 @@ public class ImageViewer {
 	 * @param clipToImage whether the function should return <code>null</code> for positions outside
 	 * the image bounds
 	 * @return the corresponding image pixel
-	 * @throws IllegalStateException if <code>clipToImage</code> is <code>true</code> but there is no image
+	 * @throws IllegalStateException if there is no image set or if the size of the viewer is 0 (for example because
+	 * it is not in a visible component)
 	 */
 	public Point pointToPixel(Point p, boolean clipToImage) {
 		return theImage.pointToPixel(p, clipToImage);
