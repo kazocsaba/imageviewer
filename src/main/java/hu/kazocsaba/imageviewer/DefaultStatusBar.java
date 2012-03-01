@@ -1,6 +1,7 @@
 package hu.kazocsaba.imageviewer;
 
 import java.awt.Color;
+import java.awt.Insets;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -19,12 +20,15 @@ public class DefaultStatusBar extends StatusBar implements ImageMouseMotionListe
 	private final JLabel posLabel;
 	
 	private int currentX=-1, currentY=-1;
+	
+	private final Insets statusBarInsets;
 
 	public DefaultStatusBar() {
 		statusBar = new JPanel();
 		statusBar.setBorder(BorderFactory.createEtchedBorder());
 		posLabel = new JLabel("n/a");
 		statusBar.add(posLabel);
+		statusBarInsets=statusBar.getInsets();
 	}
 	
 	@Override
@@ -53,12 +57,34 @@ public class DefaultStatusBar extends StatusBar implements ImageMouseMotionListe
 			if (image.getRaster().getNumBands()==1) {
 				posLabel.setText(String.format("%d, %d; intensity %d", currentX, currentY,
 						image.getRaster().getSample(currentX, currentY, 0)));
-				
+			} else if (image.getRaster().getNumBands()==4) {
+				int rgb = image.getRGB(currentX, currentY);
+				Color c = new Color(rgb, true);
+				posLabel.setText(String.format("%d, %d; color %d,%d,%d, alpha %d", currentX, currentY,
+						c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha()));
 			} else {
 				int rgb = image.getRGB(currentX, currentY);
 				Color c = new Color(rgb);
 				posLabel.setText(String.format("%d, %d; color %d,%d,%d", currentX, currentY,
 						c.getRed(), c.getGreen(), c.getBlue()));
+			}
+			
+			if (statusBar.getWidth()-statusBarInsets.left-statusBarInsets.right<posLabel.getPreferredSize().width) {
+				// not enough space, shorter version is required
+				if (image.getRaster().getNumBands()==1) {
+					posLabel.setText(String.format("%d, %d; %d", currentX, currentY,
+							image.getRaster().getSample(currentX, currentY, 0)));
+				} else if (image.getRaster().getNumBands()==4) {
+					int rgb = image.getRGB(currentX, currentY);
+					Color c = new Color(rgb, true);
+					posLabel.setText(String.format("%d, %d; (%d,%d,%d,%d)", currentX, currentY,
+							c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha()));
+				} else {
+					int rgb = image.getRGB(currentX, currentY);
+					Color c = new Color(rgb);
+					posLabel.setText(String.format("%d, %d; (%d,%d,%d)", currentX, currentY,
+							c.getRed(), c.getGreen(), c.getBlue()));
+				}
 			}
 		}
 	}
