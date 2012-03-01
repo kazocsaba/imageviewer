@@ -55,6 +55,11 @@ public class ImageViewerUtil {
 				other.getScrollPane().getHorizontalScrollBar().setModel(first.getScrollPane().getHorizontalScrollBar().getModel());
 				other.getScrollPane().getVerticalScrollBar().setModel(first.getScrollPane().getVerticalScrollBar().getModel());
 				other.trackSizeIfEmpty(first);
+				other.setStatusBarVisible(first.isStatusBarVisible());
+				other.setResizeStrategy(first.getResizeStrategy());
+				other.setZoomFactor(first.getZoomFactor());
+				other.setPixelatedZoom(first.isPixelatedZoom());
+				other.setInterpolationType(first.getInterpolationType());
 				new PropertySynchronizer(first, other);
 			}
 		}
