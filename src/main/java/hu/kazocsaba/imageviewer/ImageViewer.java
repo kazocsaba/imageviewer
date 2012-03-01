@@ -338,7 +338,7 @@ public class ImageViewer {
 								ImageIO.write(image, "png", f);
 							}
 						} catch (IOException ex) {
-							JOptionPane.showMessageDialog(imageViewer.getComponent(), "Cannot write image to "+f.getAbsolutePath(), "Error", JOptionPane.ERROR_MESSAGE);
+							JOptionPane.showMessageDialog(imageViewer.getComponent(), "<html>Cannot write image to "+f.getAbsolutePath()+":<br>"+ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 						}
 					}
 				}
