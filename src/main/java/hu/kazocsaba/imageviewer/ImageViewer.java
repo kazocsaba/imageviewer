@@ -51,7 +51,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  * @see Overlay
  * @author Kazó Csaba
  */
-public class ImageViewer {
+public final class ImageViewer {
 	private final LayeredImageView view;
 	private ImageComponent theImage;
 	private final JScrollPane scroller;

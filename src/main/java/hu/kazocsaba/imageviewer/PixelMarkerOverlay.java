@@ -20,7 +20,7 @@ import java.util.Set;
  * mutator functions cause the overlay to be repainted.
  * @author Kazó Csaba
  */
-public class PixelMarkerOverlay extends Overlay {
+public final class PixelMarkerOverlay extends Overlay {
 
 	private Set<Point> points = new HashSet<Point>();
 	private Color color = Color.RED;

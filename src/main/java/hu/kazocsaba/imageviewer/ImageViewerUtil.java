@@ -7,7 +7,7 @@ import java.beans.PropertyChangeListener;
  * Utility methods for image viewers.
  * @author Kazó Csaba
  */
-public class ImageViewerUtil {
+public final class ImageViewerUtil {
 	/** Private constructor. */
 	private ImageViewerUtil() {}
 	/**
