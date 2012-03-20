@@ -102,13 +102,13 @@ public final class DefaultStatusBar extends StatusBar implements ImageMouseMotio
 	@Override
 	protected void register(ImageViewer viewer) {
 		viewer.addImageMouseMotionListener(this);
-		viewer.addPropertyChangeListener("image", this);
+		viewer.addPropertyChangeListener(this);
 	}
 
 	@Override
 	protected void unregister(ImageViewer viewer) {
 		viewer.removeImageMouseMotionListener(this);
-		viewer.removePropertyChangeListener("image", this);
+		viewer.removePropertyChangeListener(this);
 	}
 	
 }
