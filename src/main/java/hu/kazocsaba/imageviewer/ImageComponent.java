@@ -211,7 +211,7 @@ class ImageComponent extends JComponent {
 			if (trackSizeIfEmpty!=null)
 				for (ImageComponent c:trackSizeIfEmpty)
 					if (c.getImage()!=null)
-						return new Dimension(c.getImage().getWidth(), c.getImage().getHeight());
+						return c.getPreferredSize();
 			return new Dimension();
 		} else if (resizeStrategy==ResizeStrategy.CUSTOM_ZOOM) {
 			return new Dimension((int)Math.ceil(image.getWidth()*zoomFactor), (int)Math.ceil(image.getHeight()*zoomFactor));
