@@ -46,8 +46,7 @@ public class DefaultStatusBar extends StatusBar implements ImageMouseMotionListe
 
 	@Override
 	public void propertyChange(PropertyChangeEvent evt) {
-		if ("image".equals(evt.getPropertyName()))
-			update((BufferedImage)evt.getNewValue());
+		update(getImageViewer().getImage());
 	}
 	
 	private void update(BufferedImage image) {
