@@ -67,6 +67,7 @@ class ImageComponent extends JComponent {
 					getImageTransform().transform(preparedCenter, preparedCenter);
 					Rectangle view = new Rectangle(preparedCenter.x-viewSize.width/2, preparedCenter.y-viewSize.height/2, viewSize.width, viewSize.height);
 					scrollRectToVisible(view);
+					mouseEventTranslator.correctionalFire();
 				}
 				preparedCenter=null;
 			}
@@ -337,12 +338,44 @@ class ImageComponent extends JComponent {
 	private class MouseEventTranslator implements MouseInputListener, PropertyChangeListener {
 		/** This flag is true if the mouse cursor is inside the bounds of the image. */
 		private boolean on=false;
+		/**
+		 * The last position reported. This is used to avoid multiple successive image mouse motion events
+		 * with the same position.
+		 */
+		private Point lastPosition=null;
 		
 		/** Sets up this translator. */
 		private void register(ImageComponent ic) {
 			ic.addMouseListener(this);
 			ic.addMouseMotionListener(this);
 			ic.propertyChangeSupport.addPropertyChangeListener(this);
+		}
+		
+		private void handleMouseAt(Point position, MouseEvent event) {
+			if (image==null) {
+				if (on) {
+					on=false;
+					fireMouseExit();
+				}
+			} else {
+				if (position!=null) position=pointToPixel(position);
+				if (position==null) {
+					if (on) {
+						on=false;
+						fireMouseExit();
+					}
+				} else {
+					if (!on) {
+						on=true;
+						lastPosition=null;
+						fireMouseEnter(position.x, position.y, event);
+					}
+					if (!position.equals(lastPosition)) {
+						lastPosition=position;
+						fireMouseAtPixel(position.x, position.y, event);
+					}
+				}
+			}
 		}
 
 		@Override
@@ -374,17 +407,7 @@ class ImageComponent extends JComponent {
 		}
 		@Override
 		public void mouseMoved(MouseEvent e) {
-			if (image == null) return;
-			Point p = pointToPixel(e.getPoint());
-			if (p == null) {
-				if (on) {
-					on = false;
-					fireMouseExit();
-				}
-			} else {
-				on = true;
-				fireMouseAtPixel(p.x, p.y, e);
-			}
+			handleMouseAt(e.getPoint(), e);
 		}
 
 		@Override
@@ -396,26 +419,20 @@ class ImageComponent extends JComponent {
 		
 		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
-			if ("image".equals(evt.getPropertyName())) {
-				if (image == null && on) {
-					on = false;
-					fireMouseExit();
-				}
-			} else if ("resizeStrategy".equals(evt.getPropertyName())) {
-				if (image!=null) {
-					Point p=ImageComponent.this.getMousePosition();
-					if (p!=null) p=pointToPixel(p);
-					if (p==null) {
-						if (on) {
-							on = false;
-							fireMouseExit();
-						}
-					} else {
-						on = true;
-						fireMouseAtPixel(p.x, p.y, null);
-					}
-				}
+			if (
+					"image".equals(evt.getPropertyName()) ||
+					"resizeStrategy".equals(evt.getPropertyName()) ||
+					(getResizeStrategy()==ResizeStrategy.CUSTOM_ZOOM && "zoomFactor".equals(evt.getPropertyName()))) {
+				correctionalFire();
 			}
+		}
+		
+		/**
+		 * Fires a motion event based on the current cursor position. Use this method if something other than mouse motion
+		 * changed where the cursor is relative to the image.
+		 */
+		private void correctionalFire() {
+			handleMouseAt(ImageComponent.this.getMousePosition(), null);
 		}
 
 		private void fireMouseAtPixel(int x, int y, MouseEvent ev) {
