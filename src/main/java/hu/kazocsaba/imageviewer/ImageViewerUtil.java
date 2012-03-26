@@ -2,6 +2,7 @@ package hu.kazocsaba.imageviewer;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 
 /**
  * Utility methods for image viewers.
@@ -61,6 +62,25 @@ public final class ImageViewerUtil {
 				other.setPixelatedZoom(first.isPixelatedZoom());
 				other.setInterpolationType(first.getInterpolationType());
 				new PropertySynchronizer(first, other);
+			}
+		}
+	}
+	
+	/**
+	 * Synchronizes the {@link PixelInfoStatusBar}s associated with the viewers. Viewers with a different or {@code null}
+	 * status bar are ignored. When this function returns, the {@code PixelInfoStatusBar}s among the viewer status bars
+	 * will share the same {@code PixelModel}, and thus display the same pixel.
+	 * @param viewers the viewers
+	 */
+	public static void synchronizePixelInfoStatusBars(ImageViewer... viewers) {
+		PixelModel model=null;
+		for (ImageViewer viewer: viewers) {
+			StatusBar bar=viewer.getStatusBar();
+			if (bar instanceof PixelInfoStatusBar) {
+				if (model==null)
+					model=((PixelInfoStatusBar)bar).getModel();
+				else
+					((PixelInfoStatusBar)bar).setModel(model);
 			}
 		}
 	}

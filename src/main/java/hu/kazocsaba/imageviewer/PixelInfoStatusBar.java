@@ -9,6 +9,8 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  * A status bar implementation that display information based on a pixel of the image. Call the
@@ -25,15 +27,20 @@ public class PixelInfoStatusBar extends StatusBar {
 
 	private final Insets statusBarInsets;
 	
-	/** The x coordinate of the pixel currently displayed; -1 if none. */
-	private int currentX=-1;
-	/** The y coordinate of the pixel currently displayed; -1 if none. */
-	private int currentY=-1;
+	private PixelModel model;
 	
 	private PropertyChangeListener propertyChangeListener=new PropertyChangeListener() {
 
 		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
+			update();
+		}
+	};
+	
+	private final ChangeListener modelListener=new ChangeListener() {
+
+		@Override
+		public void stateChanged(ChangeEvent e) {
 			update();
 		}
 	};
@@ -47,6 +54,34 @@ public class PixelInfoStatusBar extends StatusBar {
 		label = new JLabel("n/a");
 		statusBar.add(label);
 		statusBarInsets=statusBar.getInsets();
+		
+		setModel(new PixelModel());
+	}
+	
+	/**
+	 * Sets the model dictating the pixel shown by this status bar.
+	 *
+	 * @param newModel the new model
+	 * @throws NullPointerException if {@code newModel} is {@code null}
+	 */
+	public final void setModel(PixelModel newModel) {
+		if (newModel == null) throw new NullPointerException();
+		
+		if (model != newModel) {
+			if (model != null)
+				model.removeChangeListener(modelListener);
+			model = newModel;
+			model.addChangeListener(modelListener);
+			update();
+		}
+	}
+
+	/**
+	 * Returns the model storing the pixel shown by this status bar.
+	 * @return the current model; never {@code null}
+	 */
+	public PixelModel getModel() {
+		return model;
 	}
 
 	@Override
@@ -61,32 +96,22 @@ public class PixelInfoStatusBar extends StatusBar {
 	 * @param y the y coordinate of the pixel
 	 */
 	public void setPixel(int x, int y) {
-		// (-1,-1) indicates 'no data'; change all other representations to match
-		if (x<0) {
-			x=-1;
-			y=-1;
-		} else if (y<0) {
-			x=-1;
-			y=-1;
-		}
-		if (currentX!=x || currentY!=y) {
-			currentX=x;
-			currentY=y;
-			update();
-		}
+		model.set(x, y);
 	}
+	
 	/**
-	 * Updates the info label. This function is called when either the selected pixel is changed via {@code setPixel}
-	 * or the image shown in the viewer is changed via {@code ImageViewer.setImage}. You can call this method to indicate
+	 * Updates the info label. This function is called when either the selected pixel
+	 * or the image shown in the viewer is changed. You can call this method to indicate
 	 * that the message should be updated for some different reason.
 	 */
 	protected final void update() {
-		BufferedImage image=getImageViewer().getImage();
-		if (image==null || currentX<0 || currentY<0 || currentX>=image.getWidth() || currentY>=image.getHeight())
-			label.setText("n/a");
+		BufferedImage image=getImageViewer()==null ? null : getImageViewer().getImage();
+		if (image==null || model.isInvalid() || model.getX()>=image.getWidth() || model.getY()>=image.getHeight())
+			updateLabelNoData();
 		else
-			updateLabel(image, currentX, currentY, statusBar.getWidth()-statusBarInsets.left-statusBarInsets.right);
+			updateLabel(image, model.getX(), model.getY(), statusBar.getWidth()-statusBarInsets.left-statusBarInsets.right);
 	}
+	
 	/**
 	 * This function updates the contents of the {@link #label} to indicate that no data can be shown. By default,
 	 * this function is called by {@code update} when the image is {@code null} or the pixel to be shown is not within
@@ -145,6 +170,7 @@ public class PixelInfoStatusBar extends StatusBar {
 	@Override
 	protected void register(ImageViewer viewer) {
 		viewer.addPropertyChangeListener("image", propertyChangeListener);
+		update();
 	}
 
 	@Override
