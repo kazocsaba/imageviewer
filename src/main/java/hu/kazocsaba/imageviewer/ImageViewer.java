@@ -399,6 +399,13 @@ public final class ImageViewer {
 		propertyChangeSupport.firePropertyChange("statusBar", oldStatusBar, statusBar);
 	}
 	/**
+	 * Returns the status bar currently associated with this viewer.
+	 * @return the current status bar, or {@code null} if the viewer has no status bar
+	 */
+	public StatusBar getStatusBar() {
+		return statusBar;
+	}
+	/**
 	 * Sets whether the status bar is visible. The status bar is hidden by default.
 	 * @param statusBarVisible true, if the status bar should be visible; false otherwise
 	 */
