@@ -1,6 +1,13 @@
 Changelog
 =========
 
+Version 1.1.2 (???):
+
+- Fix synchronization of viewers when some of them were empty.
+- Added PixelInfoStatusBar which displays information on an image pixel.
+- Added ImageViewerUtil.synchronizePixelInfoStatusBars.
+- Fixed image mouse motion events caused by non-mouse-motion changes (e.g. when the resize strategy is changed).
+
 Version 1.1.1 (2012.03.01):
 
 - Enhanced DefaultStatusBar to display alpha too, and to use a shorter display format when there's not enough room.
