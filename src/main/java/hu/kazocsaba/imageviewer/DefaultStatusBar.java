@@ -5,7 +5,7 @@ package hu.kazocsaba.imageviewer;
  * coordinates) and the colour of the pixel under the cursor.
  * @author Kazó Csaba
  */
-final class DefaultStatusBar extends PixelInfoStatusBar implements ImageMouseMotionListener {
+public class DefaultStatusBar extends PixelInfoStatusBar implements ImageMouseMotionListener {
 	
 	@Override
 	public void mouseMoved(ImageMouseEvent e) {
