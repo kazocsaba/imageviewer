@@ -1,12 +1,14 @@
 package hu.kazocsaba.imageviewer;
 
+import java.applet.Applet;
+import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Window;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
@@ -19,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.swing.CellRendererPane;
 import javax.swing.JComponent;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
@@ -39,13 +42,12 @@ class ImageComponent extends JComponent {
 	private final MouseEventTranslator mouseEventTranslator = new MouseEventTranslator();
 	private final PaintManager paintManager = new PaintManager();
 	
-	/* Handles repositioning the scroll pane when the image is resized so that the same are remains visible. */
-	class Rescroller implements Runnable {
+	/* Handles repositioning the scroll pane when the image is resized so that the same area remains visible. */
+	class Rescroller {
 		private Point preparedCenter=null;
-		private BufferedImage preparedImage;
 		
 		void prepare() {
-			if (preparedCenter==null && image!=null && hasSize()) {
+			if (image!=null && hasSize()) {
 				Rectangle viewRect=((JViewport)SwingUtilities.getAncestorOfClass(JViewport.class, ImageComponent.this)).getViewRect();
 				preparedCenter=new Point(viewRect.x+viewRect.width/2, viewRect.y+viewRect.height/2);
 				try {
@@ -53,22 +55,17 @@ class ImageComponent extends JComponent {
 				} catch (NoninvertibleTransformException e) {
 					throw new Error(e);
 				}
-				preparedImage=image;
-				EventQueue.invokeLater(this);
 			}
 		}
 
-		@Override
-		public void run() {
-			if (preparedImage==image && hasSize()) {
-				if (hasSize()) {
-					JViewport viewport = (JViewport)SwingUtilities.getAncestorOfClass(JViewport.class, ImageComponent.this);
-					Dimension viewSize=(viewport).getExtentSize();
-					getImageTransform().transform(preparedCenter, preparedCenter);
-					Rectangle view = new Rectangle(preparedCenter.x-viewSize.width/2, preparedCenter.y-viewSize.height/2, viewSize.width, viewSize.height);
-					scrollRectToVisible(view);
-					mouseEventTranslator.correctionalFire();
-				}
+		void rescroll() {
+			if (preparedCenter!=null) {
+				JViewport viewport = (JViewport)SwingUtilities.getAncestorOfClass(JViewport.class, ImageComponent.this);
+				Dimension viewSize=(viewport).getExtentSize();
+				getImageTransform().transform(preparedCenter, preparedCenter);
+				Rectangle view = new Rectangle(preparedCenter.x-viewSize.width/2, preparedCenter.y-viewSize.height/2, viewSize.width, viewSize.height);
+				scrollRectToVisible(view);
+				mouseEventTranslator.correctionalFire();
 				preparedCenter=null;
 			}
 		}
@@ -136,15 +133,49 @@ class ImageComponent extends JComponent {
 	public BufferedImage getImage() {
 		return image;
 	}
-	
+	/**
+	 * Preforms all necessary actions to ensure that the viewer is resized to its proper size. It does that by invoking
+	 * {@code validate()} on the viewer's validateRoot. It also issues a {@code repaint()}.
+	 */
+	private void resizeNow() {
+		invalidate();
+		// find the validate root; adapted from the package-private SwingUtilities.getValidateRoot
+		Container root = null;
+		Container c=this;
+		for (; c != null; c = c.getParent()) {
+			if (!c.isDisplayable() || c instanceof CellRendererPane) {
+				return;
+			}
+			if (c.isValidateRoot()) {
+				root = c;
+				break;
+			}
+		}
+
+		if (root == null) return;
+
+		for (; c != null; c = c.getParent()) {
+			if (!c.isDisplayable() || !c.isVisible()) {
+				return;
+			}
+			if (c instanceof Window || c instanceof Applet) {
+				break;
+			}
+		}
+
+		if (c==null) return;
+		
+		root.validate();
+		repaint();
+	}
 	public void setResizeStrategy(ResizeStrategy resizeStrategy) {
 		if (resizeStrategy == this.resizeStrategy)
 			return;
 		rescroller.prepare();
 		ResizeStrategy oldResizeStrategy=this.resizeStrategy;
 		this.resizeStrategy = resizeStrategy;
-		revalidate();
-		repaint();
+		resizeNow();
+		rescroller.rescroll();
 		propertyChangeSupport.firePropertyChange("resizeStrategy", oldResizeStrategy, resizeStrategy);
 	}
 	
@@ -199,11 +230,15 @@ class ImageComponent extends JComponent {
 		if (zoomFactor==newZoomFactor) return;
 		if (newZoomFactor<=0 || Double.isInfinite(newZoomFactor) || Double.isNaN(newZoomFactor))
 			throw new IllegalArgumentException("Invalid zoom factor: "+newZoomFactor);
-		rescroller.prepare();
+		if (getResizeStrategy()==ResizeStrategy.CUSTOM_ZOOM) {
+			rescroller.prepare();
+		}
 		double oldZoomFactor=zoomFactor;
 		zoomFactor=newZoomFactor;
-		revalidate();
-		repaint();
+		if (getResizeStrategy()==ResizeStrategy.CUSTOM_ZOOM) {
+			resizeNow();
+			rescroller.rescroll();
+		}
 		propertyChangeSupport.firePropertyChange("zoomFactor", oldZoomFactor, newZoomFactor);
 	}
 	@Override
