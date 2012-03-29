@@ -1,12 +1,13 @@
 package hu.kazocsaba.imageviewer;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.LayoutManager;
 import java.awt.Rectangle;
 import javax.swing.JComponent;
 import javax.swing.JLayeredPane;
 import javax.swing.JViewport;
-import javax.swing.OverlayLayout;
 import javax.swing.Scrollable;
 
 /**
@@ -20,7 +21,7 @@ class LayeredImageView  {
 	public LayeredImageView(ImageComponent theImage) {
 		this.theImage = theImage;
 		layeredPane=new ScrollableLayeredPane();
-		layeredPane.setLayout(new OverlayLayout(layeredPane));
+		layeredPane.setLayout(new OverlayLayout());
 		layeredPane.add(theImage, Integer.valueOf(0));
 		layeredPane.setOpaque(true);
 	}
@@ -61,6 +62,35 @@ class LayeredImageView  {
 			}
 		}
 		throw new IllegalArgumentException("Overlay not part of this viewer");
+	}
+	/**
+	 * This layout manager ensures that the ImageComponent and all the overlays fill the container exactly.
+	 */
+	private class OverlayLayout implements LayoutManager {
+
+		@Override
+		public void addLayoutComponent(String name, Component comp) {}
+
+		@Override
+		public void removeLayoutComponent(Component comp) {}
+
+		@Override
+		public Dimension preferredLayoutSize(Container parent) {
+			return theImage.getPreferredSize();
+		}
+
+		@Override
+		public Dimension minimumLayoutSize(Container parent) {
+			return theImage.getMinimumSize();
+		}
+
+		@Override
+		public void layoutContainer(Container parent) {
+			for (int i=0; i<parent.getComponentCount(); i++) {
+				parent.getComponent(i).setBounds(0, 0, parent.getWidth(), parent.getHeight());
+			}
+		}
+		
 	}
 	private class ScrollableLayeredPane extends JLayeredPane implements Scrollable {
 
