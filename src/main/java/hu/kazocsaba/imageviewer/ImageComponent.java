@@ -467,7 +467,12 @@ class ImageComponent extends JComponent {
 		 * changed where the cursor is relative to the image.
 		 */
 		private void correctionalFire() {
-			handleMouseAt(ImageComponent.this.getMousePosition(), null);
+			/**
+			 * We use our parent, LayeredImageView, to locate the mouse. If the viewer has an overlay, then
+			 * ImageComponent.getMousePosition will return null because the mouse is over the overlay and not the image
+			 * component.
+			 */
+			handleMouseAt(getParent().getMousePosition(true), null);
 		}
 
 		private void fireMouseAtPixel(int x, int y, MouseEvent ev) {
