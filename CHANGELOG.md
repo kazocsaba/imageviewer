@@ -1,12 +1,13 @@
 Changelog
 =========
 
-Version 1.1.2 (???):
+Version 1.2.0 (2012.03.29):
 
 - Fix synchronization of viewers when some of them were empty.
 - Added PixelInfoStatusBar which displays information on an image pixel.
 - Added ImageViewerUtil.synchronizePixelInfoStatusBars.
 - Fixed image mouse motion events caused by non-mouse-motion changes (e.g. when the resize strategy is changed).
+- Fixed flicker when the viewer rescrolls after a resize.
 
 Version 1.1.1 (2012.03.01):
 
