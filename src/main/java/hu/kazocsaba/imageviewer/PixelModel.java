@@ -15,7 +15,7 @@ public class PixelModel {
 	private int x = -1, y = -1;
 
 	/**
-	 * Adds a {@code ChangeListener to the model.
+	 * Adds a {@code ChangeListener} to the model.
 	 * @param listener the listener to add
 	 */
 	public void addChangeListener(ChangeListener listener) {
