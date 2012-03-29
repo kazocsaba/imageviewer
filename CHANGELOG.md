@@ -1,6 +1,8 @@
 Changelog
 =========
 
+Version 1.2.1 (2012.03.29): Fixed image mouse events when viewer had overlay.
+
 Version 1.2.0 (2012.03.29):
 
 - Fix synchronization of viewers when some of them were empty.
