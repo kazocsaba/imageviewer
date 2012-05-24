@@ -44,12 +44,12 @@ class ImageComponent extends JComponent {
 	
 	/* Handles repositioning the scroll pane when the image is resized so that the same area remains visible. */
 	class Rescroller {
-		private Point preparedCenter=null;
+		private Point2D preparedCenter=null;
 		
 		void prepare() {
 			if (image!=null && hasSize()) {
 				Rectangle viewRect=((JViewport)SwingUtilities.getAncestorOfClass(JViewport.class, ImageComponent.this)).getViewRect();
-				preparedCenter=new Point(viewRect.x+viewRect.width/2, viewRect.y+viewRect.height/2);
+				preparedCenter=new Point2D.Double(viewRect.getCenterX(), viewRect.getCenterY());
 				try {
 					getImageTransform().inverseTransform(preparedCenter, preparedCenter);
 				} catch (NoninvertibleTransformException e) {
@@ -61,9 +61,9 @@ class ImageComponent extends JComponent {
 		void rescroll() {
 			if (preparedCenter!=null) {
 				JViewport viewport = (JViewport)SwingUtilities.getAncestorOfClass(JViewport.class, ImageComponent.this);
-				Dimension viewSize=(viewport).getExtentSize();
+				Dimension viewSize=viewport.getExtentSize();
 				getImageTransform().transform(preparedCenter, preparedCenter);
-				Rectangle view = new Rectangle(preparedCenter.x-viewSize.width/2, preparedCenter.y-viewSize.height/2, viewSize.width, viewSize.height);
+				Rectangle view = new Rectangle((int)Math.round(preparedCenter.getX()-viewSize.width/2.0), (int)Math.round(preparedCenter.getY()-viewSize.height/2.0), viewSize.width, viewSize.height);
 				scrollRectToVisible(view);
 				mouseEventTranslator.correctionalFire();
 				preparedCenter=null;
