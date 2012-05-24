@@ -86,14 +86,32 @@
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.11</version>
-				<configuration>
-					<excludes>
-						<exclude>**/RescrollTest.java</exclude>
-					</excludes>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>
+	<profiles>
+		<profile>
+			<id>skipGuiTests</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<configuration>
+							<excludes>
+								<exclude>**/gui/*Test.java</exclude>
+							</excludes>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>allTests</id>
+		</profile>
+	</profiles>
 	
 	<dependencies>
 		<dependency>

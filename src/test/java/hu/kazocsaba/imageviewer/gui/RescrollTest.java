@@ -21,8 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package hu.kazocsaba.imageviewer;
+package hu.kazocsaba.imageviewer.gui;
 
+import hu.kazocsaba.imageviewer.ImageViewer;
+import hu.kazocsaba.imageviewer.ResizeStrategy;
+import static hu.kazocsaba.imageviewer.gui.GuiUtils.*;
 import java.awt.Dimension;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
@@ -39,7 +42,6 @@ import org.fest.assertions.Assertions;
 import org.fest.swing.edt.FailOnThreadViolationRepaintManager;
 import org.fest.swing.edt.GuiActionRunner;
 import org.fest.swing.edt.GuiQuery;
-import org.fest.swing.edt.GuiTask;
 import org.fest.swing.fixture.FrameFixture;
 import org.fest.swing.fixture.JScrollPaneFixture;
 import org.junit.After;
@@ -77,7 +79,6 @@ public class RescrollTest {
 	
 	@Before
 	public void setUp() {
-		FailOnThreadViolationRepaintManager.install();
 		JFrame frame=GuiActionRunner.execute(new GuiQuery<JFrame>() {
 
 			@Override
@@ -95,16 +96,6 @@ public class RescrollTest {
 	@After
 	public void tearDown() {
 		window.cleanUp();
-	}
-	
-	private void scrollTo(final BoundedRangeModel model, final int value) {
-		GuiActionRunner.execute(new GuiTask() {
-
-			@Override
-			protected void executeInEDT() throws Throwable {
-				model.setValue(value);
-			}
-		});
 	}
 	/**
 	 * Checks that the viewport is scrolled properly to bring the specified image position as close to the center as possible.
@@ -172,23 +163,10 @@ public class RescrollTest {
 		return actualCenter;
 	}
 	private void resizeViewer(final ResizeStrategy strategy) {
-		GuiActionRunner.execute(new GuiTask() {
-
-			@Override
-			protected void executeInEDT() throws Throwable {
-				viewer.setResizeStrategy(strategy);
-			}
-		});
+		resizeViewer(viewer, strategy);
 	}
 	private void resizeViewer(final double zoomFactor) {
-		GuiActionRunner.execute(new GuiTask() {
-
-			@Override
-			protected void executeInEDT() throws Throwable {
-				viewer.setResizeStrategy(ResizeStrategy.CUSTOM_ZOOM);
-				viewer.setZoomFactor(zoomFactor);
-			}
-		});
+		resizeViewer(viewer, zoomFactor);
 	}
 	
 	@Test
