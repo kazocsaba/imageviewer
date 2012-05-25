@@ -112,8 +112,9 @@ public class RescrollTest {
 			BoundedRangeModel verticalModel = window.scrollPane().verticalScrollBar().component().getModel();
 			
 			/*
-			 * We check if the scroll pane is scrolled ideally if the goal is to move the specified image point to the viewport center.
-			 * We verify this by testing if the error of the center increases when we scroll one unit in either direction.
+			 * We check if the scroll pane is scrolled ideally.
+			 * If scrolling one pixel in any direction brings the pixel at the viewport center closer to the expected position,
+			 * then we've failed.
 			 */
 			double horizontalError=Math.abs(expectedCenter.getX()-actualCenter.getX());
 			double verticalError=Math.abs(expectedCenter.getY()-actualCenter.getY());
@@ -122,42 +123,34 @@ public class RescrollTest {
 			{
 				int horizontalPos=horizontalModel.getValue();
 				if (horizontalPos>horizontalModel.getMinimum()) {
-					scrollTo(horizontalModel, horizontalPos-1);
-					Point2D alternativeCenter=imageTransform.inverseTransform(new Point2D.Double(viewport.getViewRect().getCenterX(),viewport.getViewRect().getCenterY()), null);
+					Point2D alternativeCenter=imageTransform.inverseTransform(new Point2D.Double(viewport.getViewRect().getCenterX()-1,viewport.getViewRect().getCenterY()), null);
 					Assertions.assertThat(Math.abs(expectedCenter.getX()-alternativeCenter.getX())).as("previous possible center x error")
 							.overridingErrorMessage(String.format("Point (%s,%s) should be centered; (%s,%s) is at center, but scrolling %s would yield better center (%s,%s)",expectedCenter.getX(),expectedCenter.getY(),actualCenter.getX(),actualCenter.getY(),"left",alternativeCenter.getX(),alternativeCenter.getY()))
 							.isGreaterThanOrEqualTo(horizontalError);
 				}
 				if (horizontalPos+horizontalModel.getExtent()<horizontalModel.getMaximum()) {
-					scrollTo(horizontalModel, horizontalPos+1);
-					Point2D alternativeCenter=imageTransform.inverseTransform(new Point2D.Double(viewport.getViewRect().getCenterX(),viewport.getViewRect().getCenterY()), null);
+					Point2D alternativeCenter=imageTransform.inverseTransform(new Point2D.Double(viewport.getViewRect().getCenterX()+1,viewport.getViewRect().getCenterY()), null);
 					Assertions.assertThat(Math.abs(expectedCenter.getX()-alternativeCenter.getX())).as("next possible center x error")
 							.overridingErrorMessage(String.format("Point (%s,%s) should be centered; (%s,%s) is at center, but scrolling %s would yield better center (%s,%s)",expectedCenter.getX(),expectedCenter.getY(),actualCenter.getX(),actualCenter.getY(),"right",alternativeCenter.getX(),alternativeCenter.getY()))
 							.isGreaterThanOrEqualTo(horizontalError);
 				}
-				// reset the scroll
-				scrollTo(horizontalModel, horizontalPos);
 			}
 			
 			// check vertical scroll
 			{
 				int verticalPos=verticalModel.getValue();
 				if (verticalPos>verticalModel.getMinimum()) {
-					scrollTo(verticalModel, verticalPos-1);
-					Point2D alternativeCenter=imageTransform.inverseTransform(new Point2D.Double(viewport.getViewRect().getCenterX(),viewport.getViewRect().getCenterY()), null);
+					Point2D alternativeCenter=imageTransform.inverseTransform(new Point2D.Double(viewport.getViewRect().getCenterX(),viewport.getViewRect().getCenterY()-1), null);
 					Assertions.assertThat(Math.abs(expectedCenter.getY()-alternativeCenter.getY())).as("previous possible center y error")
 							.overridingErrorMessage(String.format("Point (%s,%s) should be centered; (%s,%s) is at center, but scrolling %s would yield better center (%s,%s)",expectedCenter.getX(),expectedCenter.getY(),actualCenter.getX(),actualCenter.getY(),"up",alternativeCenter.getX(),alternativeCenter.getY()))
 							.isGreaterThanOrEqualTo(verticalError);
 				}
 				if (verticalPos+verticalModel.getExtent()<verticalModel.getMaximum()) {
-					scrollTo(verticalModel, verticalPos+1);
-					Point2D alternativeCenter=imageTransform.inverseTransform(new Point2D.Double(viewport.getViewRect().getCenterX(),viewport.getViewRect().getCenterY()), null);
+					Point2D alternativeCenter=imageTransform.inverseTransform(new Point2D.Double(viewport.getViewRect().getCenterX(),viewport.getViewRect().getCenterY()+1), null);
 					Assertions.assertThat(Math.abs(expectedCenter.getY()-alternativeCenter.getY())).as("next possible center y error")
 							.overridingErrorMessage(String.format("Point (%s,%s) should be centered; (%s,%s) is at center, but scrolling %s would yield better center (%s,%s)",expectedCenter.getX(),expectedCenter.getY(),actualCenter.getX(),actualCenter.getY(),"down",alternativeCenter.getX(),alternativeCenter.getY()))
 							.isGreaterThanOrEqualTo(verticalError);
 				}
-				// reset the scroll
-				scrollTo(verticalModel, verticalPos);
 			}
 		}
 		return actualCenter;
