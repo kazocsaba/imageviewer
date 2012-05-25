@@ -39,7 +39,6 @@ import javax.swing.BoundedRangeModel;
 import javax.swing.JFrame;
 import javax.swing.JViewport;
 import org.fest.assertions.Assertions;
-import org.fest.swing.edt.FailOnThreadViolationRepaintManager;
 import org.fest.swing.edt.GuiActionRunner;
 import org.fest.swing.edt.GuiQuery;
 import org.fest.swing.fixture.FrameFixture;

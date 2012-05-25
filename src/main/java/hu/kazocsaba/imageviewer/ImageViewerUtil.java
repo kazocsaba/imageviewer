@@ -2,7 +2,6 @@ package hu.kazocsaba.imageviewer;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Arrays;
 
 /**
  * Utility methods for image viewers.
