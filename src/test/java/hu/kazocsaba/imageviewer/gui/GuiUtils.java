@@ -40,7 +40,16 @@ class GuiUtils {
 			protected void executeInEDT() throws Throwable {
 				viewer.setResizeStrategy(ResizeStrategy.CUSTOM_ZOOM);
 				viewer.setZoomFactor(zoomFactor);
-				viewer.getComponent().validate();
+			}
+		});
+	}
+	
+	protected static void setStatusBarVisible(final ImageViewer viewer, final boolean visible) {
+		GuiActionRunner.execute(new GuiTask() {
+
+			@Override
+			protected void executeInEDT() throws Throwable {
+				viewer.setStatusBarVisible(visible);
 			}
 		});
 	}

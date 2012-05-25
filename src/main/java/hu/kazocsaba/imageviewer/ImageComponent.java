@@ -9,6 +9,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Window;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
@@ -384,6 +386,14 @@ class ImageComponent extends JComponent {
 			ic.addMouseListener(this);
 			ic.addMouseMotionListener(this);
 			ic.propertyChangeSupport.addPropertyChangeListener(this);
+			ic.addComponentListener(new ComponentAdapter() {
+
+				@Override
+				public void componentResized(ComponentEvent e) {
+					correctionalFire();
+				}
+				
+			});
 		}
 		
 		private void handleMouseAt(Point position, MouseEvent event) {
