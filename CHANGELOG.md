@@ -1,6 +1,9 @@
 Changelog
 =========
 
+Version 1.2.2 (???): Made image mouse position reporting more robust when the change is due to something
+other than mouse movement (synthetic mouse movement events).
+
 Version 1.2.1 (2012.03.29): Fixed image mouse events when viewer had overlay.
 
 Version 1.2.0 (2012.03.29):
