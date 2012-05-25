@@ -140,9 +140,9 @@ public class SyntheticMouseEventTest {
 		checkMousePosition();
 		
 		// Finally, scroll programatically.
-		scrollTo(scroll.getHorizontalScrollBar().getModel(), scroll.getHorizontalScrollBar().getMinimum());
+		scrollTo(scroll.getHorizontalScrollBar().getModel(), scroll.getHorizontalScrollBar().getMaximum());
 		checkMousePosition();
-		scrollTo(scroll.getVerticalScrollBar().getModel(), scroll.getVerticalScrollBar().getMinimum());
+		scrollTo(scroll.getVerticalScrollBar().getModel(), scroll.getVerticalScrollBar().getMaximum());
 		checkMousePosition();
 		
 		viewer.removeImageMouseMotionListener(moveListener);

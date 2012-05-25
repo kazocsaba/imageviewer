@@ -25,8 +25,9 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.CellRendererPane;
 import javax.swing.JComponent;
-import javax.swing.JViewport;
-import javax.swing.SwingUtilities;
+import javax.swing.JScrollPane;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputListener;
 
 /**
@@ -50,7 +51,7 @@ class ImageComponent extends JComponent {
 		
 		void prepare() {
 			if (image!=null && hasSize()) {
-				Rectangle viewRect=((JViewport)SwingUtilities.getAncestorOfClass(JViewport.class, ImageComponent.this)).getViewRect();
+				Rectangle viewRect=scrollPane.getViewport().getViewRect();
 				preparedCenter=new Point2D.Double(viewRect.getCenterX(), viewRect.getCenterY());
 				try {
 					getImageTransform().inverseTransform(preparedCenter, preparedCenter);
@@ -62,13 +63,11 @@ class ImageComponent extends JComponent {
 
 		void rescroll() {
 			if (preparedCenter!=null) {
-				JViewport viewport = (JViewport)SwingUtilities.getAncestorOfClass(JViewport.class, ImageComponent.this);
-				Dimension viewSize=viewport.getExtentSize();
+				Dimension viewSize=scrollPane.getViewport().getExtentSize();
 				getImageTransform().transform(preparedCenter, preparedCenter);
 				Rectangle view = new Rectangle((int)Math.round(preparedCenter.getX()-viewSize.width/2.0), (int)Math.round(preparedCenter.getY()-viewSize.height/2.0), viewSize.width, viewSize.height);
-				scrollRectToVisible(view);
-				mouseEventTranslator.correctionalFire();
 				preparedCenter=null;
+				scrollRectToVisible(view);
 			}
 		}
 		
@@ -83,12 +82,22 @@ class ImageComponent extends JComponent {
 	
 	private final PropertyChangeSupport propertyChangeSupport;
 	private final Object eventSource;
+	private final JScrollPane scrollPane;
 
-	public ImageComponent(Object eventSource, PropertyChangeSupport propertyChangeSupport) {
+	public ImageComponent(Object eventSource, PropertyChangeSupport propertyChangeSupport, JScrollPane scrollPane) {
 		this.eventSource = eventSource;
 		this.propertyChangeSupport=propertyChangeSupport;
+		this.scrollPane=scrollPane;
 		mouseEventTranslator.register(this);
 		setOpaque(true);
+		scrollPane.getViewport().addChangeListener(new ChangeListener() {
+
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				System.out.println("Scroll viewport changed");
+				mouseEventTranslator.correctionalFire();
+			}
+		});
 	}
 	
 	private boolean hasSize() {

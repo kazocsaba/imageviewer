@@ -104,10 +104,7 @@ public final class ImageViewer {
 	public ImageViewer(BufferedImage image) {
 		propertyChangeSupport=new PropertyChangeSupport(this);
 		panel=new JPanel(new BorderLayout());
-		theImage=new ImageComponent(this, propertyChangeSupport);
-		view=new LayeredImageView(theImage);
-		theImage.setImage(image);
-		scroller=new JScrollPane(view.getComponent()) {
+		scroller=new JScrollPane() {
 
 			@Override
 			protected JViewport createViewport() {
@@ -132,6 +129,10 @@ public final class ImageViewer {
 			}
 			
 		};
+		theImage=new ImageComponent(this, propertyChangeSupport, scroller);
+		view=new LayeredImageView(theImage);
+		scroller.setViewportView(view.getComponent());
+		theImage.setImage(image);
 		
 		panel.add(scroller, BorderLayout.CENTER);
 		
