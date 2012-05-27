@@ -94,7 +94,6 @@ class ImageComponent extends JComponent {
 
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				System.out.println("Scroll viewport changed");
 				mouseEventTranslator.correctionalFire();
 			}
 		});
