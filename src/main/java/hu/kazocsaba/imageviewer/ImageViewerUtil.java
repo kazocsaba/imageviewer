@@ -1,5 +1,8 @@
 package hu.kazocsaba.imageviewer;
 
+import java.util.Collection;
+import java.util.Iterator;
+
 /**
  * Utility methods for image viewers.
  * @author Kazó Csaba
@@ -17,6 +20,21 @@ public final class ImageViewerUtil {
 		Synchronizer mainSynchronizer=first.getSynchronizer();
 		for (ImageViewer other: others) {
 			mainSynchronizer.add(other);
+		}
+	}
+	
+	/**
+	 * Synchronizes the view state of multiple image viewers with respect to scroll position
+	 * and resize strategy, and other properties affecting display.
+	 * @param viewers the viewers to synchronize
+	 */
+	public static void synchronizeViewers(Collection<ImageViewer> viewers) {
+		Iterator<ImageViewer> iterator = viewers.iterator();
+		if (!iterator.hasNext()) return;
+		
+		Synchronizer mainSynchronizer=iterator.next().getSynchronizer();
+		while (iterator.hasNext()) {
+			mainSynchronizer.add(iterator.next());
 		}
 	}
 	

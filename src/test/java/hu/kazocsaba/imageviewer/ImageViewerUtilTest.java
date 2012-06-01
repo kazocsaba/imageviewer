@@ -1,6 +1,8 @@
 package hu.kazocsaba.imageviewer;
 
 import java.awt.RenderingHints;
+import java.util.ArrayList;
+import java.util.List;
 import static org.junit.Assert.*;
 import org.junit.Test;
 
@@ -36,5 +38,26 @@ public class ImageViewerUtilTest {
 		assertSame(RenderingHints.VALUE_INTERPOLATION_BILINEAR, v2.getInterpolationType());
 		assertSame(ResizeStrategy.NO_RESIZE, v2.getResizeStrategy());
 		assertEquals(4.6, v2.getZoomFactor(), 0);
+	}
+	
+	@Test
+	public void testSynchronizationFromCollection() {
+		List<ImageViewer> viewers=new ArrayList<ImageViewer>(5);
+		for (int i=0; i<5; i++) {
+			ImageViewer viewer=new ImageViewer();
+			viewer.setResizeStrategy(ResizeStrategy.CUSTOM_ZOOM);
+			viewers.add(viewer);
+		}
+		ImageViewerUtil.synchronizeViewers(viewers);
+		
+		for (int i=0; i<5; i++) {
+			double expectedZoom=i+.5;
+			// set the zoom on the i-th viewer
+			viewers.get(i).setZoomFactor(expectedZoom);
+			
+			// check the others
+			for (ImageViewer viewer: viewers)
+				assertEquals(expectedZoom, viewer.getZoomFactor(), 0);
+		}
 	}
 }
