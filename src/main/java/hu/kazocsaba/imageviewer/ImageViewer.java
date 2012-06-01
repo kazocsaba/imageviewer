@@ -71,12 +71,14 @@ public final class ImageViewer {
 
 	private MouseListener contextMenuListener = new MouseAdapter() {
 		private void showPopup(MouseEvent e) {
-			e.consume();
-			Point p = panel.getPopupLocation(e);
-			if (p == null) {
-				p = e.getPoint();
+			if (popup != null) {
+				e.consume();
+				Point p = panel.getPopupLocation(e);
+				if (p == null) {
+					p = e.getPoint();
+				}
+				popup.show(e.getComponent(), p.x, p.y);
 			}
-			popup.show(e.getComponent(), p.x, p.y);
 		}
 		@Override
 		public void mousePressed(MouseEvent e) {
@@ -372,6 +374,13 @@ public final class ImageViewer {
 		popup.add(togglePixelatedZoomItem);
 		popup.add(saveImageMenuItem);
 		return popup;
+	}
+	/**
+	 * Sets the popup menu for the viewer. This function can be called with a {@code null} argument to disable the popup.
+	 * @param popup the popup menu to show for the viewer; can be {@code null} to disable the popup menu
+	 */
+	public void setPopupMenu(JPopupMenu popup) {
+		this.popup=popup;
 	}
 	/**
 	 * Sets the status bar component for this image viewer. The new status bar is made
