@@ -20,12 +20,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import javax.swing.CellRendererPane;
 import javax.swing.JComponent;
-import javax.swing.JScrollPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputListener;
@@ -51,7 +48,7 @@ class ImageComponent extends JComponent {
 		
 		void prepare() {
 			if (image!=null && hasSize()) {
-				Rectangle viewRect=scrollPane.getViewport().getViewRect();
+				Rectangle viewRect=viewer.getScrollPane().getViewport().getViewRect();
 				preparedCenter=new Point2D.Double(viewRect.getCenterX(), viewRect.getCenterY());
 				try {
 					getImageTransform().inverseTransform(preparedCenter, preparedCenter);
@@ -63,7 +60,7 @@ class ImageComponent extends JComponent {
 
 		void rescroll() {
 			if (preparedCenter!=null) {
-				Dimension viewSize=scrollPane.getViewport().getExtentSize();
+				Dimension viewSize=viewer.getScrollPane().getViewport().getExtentSize();
 				getImageTransform().transform(preparedCenter, preparedCenter);
 				Rectangle view = new Rectangle((int)Math.round(preparedCenter.getX()-viewSize.width/2.0), (int)Math.round(preparedCenter.getY()-viewSize.height/2.0), viewSize.width, viewSize.height);
 				preparedCenter=null;
@@ -74,23 +71,15 @@ class ImageComponent extends JComponent {
 	}
 	private Rescroller rescroller=new Rescroller();
 	
-	/**
-	 * This set is shared by all synchronized image components and contains all
-	 * synchronized image components. Unless there is no synchronization; then it is null.
-	 */
-	private Set<ImageComponent> trackSizeIfEmpty = null;
-	
 	private final PropertyChangeSupport propertyChangeSupport;
-	private final Object eventSource;
-	private final JScrollPane scrollPane;
+	private final ImageViewer viewer;
 
-	public ImageComponent(Object eventSource, PropertyChangeSupport propertyChangeSupport, JScrollPane scrollPane) {
-		this.eventSource = eventSource;
+	public ImageComponent(ImageViewer viewer, PropertyChangeSupport propertyChangeSupport) {
+		this.viewer = viewer;
 		this.propertyChangeSupport=propertyChangeSupport;
-		this.scrollPane=scrollPane;
 		mouseEventTranslator.register(this);
 		setOpaque(true);
-		scrollPane.getViewport().addChangeListener(new ChangeListener() {
+		viewer.getScrollPane().getViewport().addChangeListener(new ChangeListener() {
 
 			@Override
 			public void stateChanged(ChangeEvent e) {
@@ -184,8 +173,13 @@ class ImageComponent extends JComponent {
 		rescroller.prepare();
 		ResizeStrategy oldResizeStrategy=this.resizeStrategy;
 		this.resizeStrategy = resizeStrategy;
+		boolean canRescroll=viewer.getSynchronizer().resizeStrategyChangedCanIRescroll(viewer);
 		resizeNow();
-		rescroller.rescroll();
+		
+		if (canRescroll) {
+			rescroller.rescroll();
+			viewer.getSynchronizer().doneRescrolling(viewer);
+		}
 		propertyChangeSupport.firePropertyChange("resizeStrategy", oldResizeStrategy, resizeStrategy);
 	}
 	
@@ -203,6 +197,7 @@ class ImageComponent extends JComponent {
 			throw new IllegalArgumentException("Invalid interpolation type; use one of the RenderingHints constants");
 		Object old=this.interpolationType;
 		this.interpolationType=type;
+		viewer.getSynchronizer().interpolationTypeChanged(viewer);
 		paintManager.notifyChanged();
 		repaint();
 		propertyChangeSupport.firePropertyChange("interpolationType", old, type);
@@ -216,6 +211,7 @@ class ImageComponent extends JComponent {
 		if (pixelatedZoom == this.pixelatedZoom)
 			return;
 		this.pixelatedZoom = pixelatedZoom;
+		viewer.getSynchronizer().pixelatedZoomChanged(viewer);
 		paintManager.notifyChanged();
 		repaint();
 		propertyChangeSupport.firePropertyChange("pixelatedZoom", !pixelatedZoom, pixelatedZoom);
@@ -245,54 +241,29 @@ class ImageComponent extends JComponent {
 		}
 		double oldZoomFactor=zoomFactor;
 		zoomFactor=newZoomFactor;
+		boolean canRescroll=viewer.getSynchronizer().zoomFactorChangedCanIRescroll(viewer);
 		if (getResizeStrategy()==ResizeStrategy.CUSTOM_ZOOM) {
 			resizeNow();
-			rescroller.rescroll();
+			// do not rescroll if we're following another viewer; the scrolling will be synchronized later
+			if (canRescroll) {
+				rescroller.rescroll();
+				viewer.getSynchronizer().doneRescrolling(viewer);
+			}
+		} else {
+			// no rescrolling is necessary, actually
+			if (canRescroll)
+				viewer.getSynchronizer().doneRescrolling(viewer);
 		}
 		propertyChangeSupport.firePropertyChange("zoomFactor", oldZoomFactor, newZoomFactor);
 	}
 	@Override
 	public Dimension getPreferredSize() {
 		if (image == null) {
-			if (trackSizeIfEmpty!=null)
-				for (ImageComponent c:trackSizeIfEmpty)
-					if (c.getImage()!=null)
-						return c.getPreferredSize();
 			return new Dimension();
 		} else if (resizeStrategy==ResizeStrategy.CUSTOM_ZOOM) {
 			return new Dimension((int)Math.ceil(image.getWidth()*zoomFactor), (int)Math.ceil(image.getHeight()*zoomFactor));
 		} else
 			return new Dimension(image.getWidth(), image.getHeight());
-	}
-	/**
-	 * Adds a component to the trackSizeIfEmpty set. If this component has no image set
-	 * but one of the tracked ones does, then the size of this component will be set to
-	 * match the size of the image displayed in one of the tracked components. This
-	 * method is useful if the scroll bars of image viewers are synchronized, because
-	 * if a viewer has no image set, it can cause the scrolling of a viewer that has an
-	 * image set not to work.
-	 * @param c the component to track
-	 */
-	public void trackSizeIfEmpty(ImageComponent c) {
-		if (trackSizeIfEmpty!=null) {
-			if (c.trackSizeIfEmpty!=null) {
-				trackSizeIfEmpty.addAll(c.trackSizeIfEmpty);
-				c.trackSizeIfEmpty=trackSizeIfEmpty;
-			} else {
-				trackSizeIfEmpty.add(c);
-				c.trackSizeIfEmpty=trackSizeIfEmpty;
-			}
-		} else {
-			if (c.trackSizeIfEmpty!=null) {
-				c.trackSizeIfEmpty.add(this);
-				trackSizeIfEmpty=c.trackSizeIfEmpty;
-			} else {
-				trackSizeIfEmpty=new HashSet<ImageComponent>(4);
-				trackSizeIfEmpty.add(this);
-				trackSizeIfEmpty.add(c);
-				c.trackSizeIfEmpty=trackSizeIfEmpty;
-			}
-		}
 	}
 
 	/**
@@ -497,7 +468,7 @@ class ImageComponent extends JComponent {
 			ImageMouseEvent e = null;
 			for (ImageMouseMotionListener imageMouseMoveListener: moveListeners) {
 				if (e == null)
-					e = new ImageMouseEvent(eventSource, image, x, y, ev);
+					e = new ImageMouseEvent(viewer, image, x, y, ev);
 				imageMouseMoveListener.mouseMoved(e);
 			}
 		}
@@ -506,7 +477,7 @@ class ImageComponent extends JComponent {
 			ImageMouseEvent e = null;
 			for (ImageMouseClickListener imageMouseClickListener: clickListeners) {
 				if (e == null)
-					e = new ImageMouseEvent(eventSource, image, x, y, ev);
+					e = new ImageMouseEvent(viewer, image, x, y, ev);
 				imageMouseClickListener.mouseClicked(e);
 			}
 		}
@@ -515,7 +486,7 @@ class ImageComponent extends JComponent {
 			ImageMouseEvent e = null;
 			for (ImageMouseMotionListener imageMouseMoveListener: moveListeners) {
 				if (e == null)
-					e = new ImageMouseEvent(eventSource, image, x, y, ev);
+					e = new ImageMouseEvent(viewer, image, x, y, ev);
 				imageMouseMoveListener.mouseEntered(e);
 			}
 		}
@@ -524,7 +495,7 @@ class ImageComponent extends JComponent {
 			ImageMouseEvent e = null;
 			for (ImageMouseMotionListener imageMouseMoveListener: moveListeners) {
 				if (e == null)
-					e = new ImageMouseEvent(eventSource, image, -1, -1, null);
+					e = new ImageMouseEvent(viewer, image, -1, -1, null);
 				imageMouseMoveListener.mouseExited(e);
 			}
 		}
@@ -533,7 +504,7 @@ class ImageComponent extends JComponent {
 			ImageMouseEvent e = null;
 			for (ImageMouseMotionListener imageMouseMoveListener: moveListeners) {
 				if (e == null)
-					e = new ImageMouseEvent(eventSource, image, x, y, ev);
+					e = new ImageMouseEvent(viewer, image, x, y, ev);
 				imageMouseMoveListener.mouseDragged(e);
 			}
 		}

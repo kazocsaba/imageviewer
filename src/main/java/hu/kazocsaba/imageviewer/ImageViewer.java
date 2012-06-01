@@ -60,6 +60,7 @@ public final class ImageViewer {
 	private boolean statusBarVisible=false;
 	private PropertyChangeSupport propertyChangeSupport;
 	private JPopupMenu popup;
+	private Synchronizer synchronizer;
 	/*
 	 * This will only be accessed from the event dispatch thread so using a static instance to share
 	 * the current directory across components is fine.
@@ -129,7 +130,8 @@ public final class ImageViewer {
 			}
 			
 		};
-		theImage=new ImageComponent(this, propertyChangeSupport, scroller);
+		synchronizer=new Synchronizer(this);
+		theImage=new ImageComponent(this, propertyChangeSupport);
 		view=new LayeredImageView(theImage);
 		scroller.setViewportView(view.getComponent());
 		theImage.setImage(image);
@@ -422,6 +424,7 @@ public final class ImageViewer {
 		}
 		boolean prev = this.statusBarVisible;
 		this.statusBarVisible = statusBarVisible;
+		synchronizer.statusBarVisibilityChanged(this);
 		propertyChangeSupport.firePropertyChange("statusBarVisible", prev, statusBarVisible);
 	}
 	/**
@@ -717,21 +720,12 @@ public final class ImageViewer {
 	JScrollPane getScrollPane() {
 		return scroller;
 	}
-	/**
-	 * Adds a component to the trackSizeIfEmpty set. If this component has no image set
-	 * but one of the tracked ones does, then the size of this component will be set to
-	 * match the size of the image displayed in one of the tracked components. This
-	 * method is useful if the scroll bars of image viewers are synchronized, because
-	 * if a viewer has no image set, it can cause the scrolling of a viewer that has an
-	 * image set not to work.
-	 * <p>
-	 * Tracking is symmetrical and transitive.
-	 * @param c the component to track
-	 */
-	void trackSizeIfEmpty(ImageViewer c) {
-		theImage.trackSizeIfEmpty(c.theImage);
+	Synchronizer getSynchronizer() {
+		return synchronizer;
 	}
-	
+	void setSynchronizer(Synchronizer newSync) {
+		synchronizer=newSync;
+	}
 	/**
 	 * Returns the image pixel corresponding to the given point. If the <code>clipToImage</code>
 	 * parameter is <code>false</code>, then the function will return an appropriately positioned
