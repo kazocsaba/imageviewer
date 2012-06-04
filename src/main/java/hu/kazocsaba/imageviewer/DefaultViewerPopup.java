@@ -42,7 +42,7 @@ public class DefaultViewerPopup extends JPopupMenu {
 	
 	/**
 	 * Creates a popup menu for use with the specified viewer.
-	 * @param viewer the viewer this popup menu belongs to
+	 * @param imageViewer the viewer this popup menu belongs to
 	 */
 	public DefaultViewerPopup(ImageViewer imageViewer) {
 		viewer=imageViewer;
