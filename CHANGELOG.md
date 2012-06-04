@@ -7,7 +7,7 @@ Version 1.2.2 (???):
 due to something other than mouse movement (synthetic mouse movement events).
 - Viewer synchronization is now usable when the images have different sizes.
 - Added ImageViewerUtil.synchronizedViewer(Collection<ImageViewer>).
-- Added ImageViewer.setPopupMenu to disable or override the popup menu.
+- Added option to disable default popup menu.
 
 Version 1.2.1 (2012.03.29): Fixed image mouse events when viewer had overlay.
 

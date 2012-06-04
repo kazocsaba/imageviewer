@@ -37,7 +37,10 @@ import javax.swing.JViewport;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
- * A general purpose image viewer component.
+ * A general purpose image viewer component. It contains a scroll pane and manages the size of the image in accordance
+ * with the {@link #setResizeStrategy(ResizeStrategy) resize strategy} property. It can also provide a popup menu
+ * containing generally useful viewing controls and functions; this default popup can be disabled by passing
+ * {@code defaultPopupMenu = null} to the constructor.
  * <p>
  * The Swing component that can be added to the GUI is obtained by calling
  * {@link #getComponent()}.
@@ -59,7 +62,6 @@ public final class ImageViewer {
 	private StatusBar statusBar;
 	private boolean statusBarVisible=false;
 	private PropertyChangeSupport propertyChangeSupport;
-	private JPopupMenu popup;
 	private Synchronizer synchronizer;
 	/*
 	 * This will only be accessed from the event dispatch thread so using a static instance to share
@@ -69,42 +71,26 @@ public final class ImageViewer {
 	private static JButton saveChooserHelpButton;
 	private static JLabel saveChooserHelpLabel;
 
-	private MouseListener contextMenuListener = new MouseAdapter() {
-		private void showPopup(MouseEvent e) {
-			if (popup != null) {
-				e.consume();
-				Point p = panel.getPopupLocation(e);
-				if (p == null) {
-					p = e.getPoint();
-				}
-				popup.show(e.getComponent(), p.x, p.y);
-			}
-		}
-		@Override
-		public void mousePressed(MouseEvent e) {
-			if (e.isPopupTrigger()) {
-				showPopup(e);
-			}
-		}
-		@Override
-		public void mouseReleased(MouseEvent e) {
-			if (e.isPopupTrigger()) {
-				showPopup(e);
-			}
-		}
-	};
 	/**
-	 * Creates a new image viewer.
+	 * Creates a new image viewer. Initially it will be empty, and it will have a default popup menu.
 	 */
 	public ImageViewer() {
 		this(null);
 	}
 	/**
-	 * Creates a new image viewer displaying the specified image.
-	 * @param image the image to display; if <code>null</code> then no image is displayed
-	 * @see #setImage(BufferedImage)
+	 * Creates a new image viewer displaying the specified image. TThe viewer will have a default popup menu.
+	 * @param image the image to display; if {@code null} then no image is displayed
 	 */
 	public ImageViewer(BufferedImage image) {
+		this(image, true);
+	}
+	/**
+	 * Creates a new image viewer displaying the specified image.
+	 * @param image the image to display; if <code>null</code> then no image is displayed
+	 * @param defaultPopupMenu if {@code true}, then a default popup menu will be created and registered for the viewer
+	 * @see #setImage(BufferedImage)
+	 */
+	public ImageViewer(BufferedImage image, boolean defaultPopupMenu) {
 		propertyChangeSupport=new PropertyChangeSupport(this);
 		panel=new JPanel(new BorderLayout());
 		scroller=new JScrollPane() {
@@ -142,8 +128,32 @@ public final class ImageViewer {
 		
 		setStatusBar(new DefaultStatusBar());
 		
-		popup=createPopup(this);
-		theImage.addMouseListener(contextMenuListener);
+		if (defaultPopupMenu) {
+			final JPopupMenu popup=createPopup(this);
+			theImage.addMouseListener(new MouseAdapter() {
+				private void showPopup(MouseEvent e) {
+					e.consume();
+					Point p = panel.getPopupLocation(e);
+					if (p == null) {
+						p = e.getPoint();
+					}
+					popup.show(e.getComponent(), p.x, p.y);
+				}
+				@Override
+				public void mousePressed(MouseEvent e) {
+					if (e.isPopupTrigger()) {
+						showPopup(e);
+					}
+				}
+				@Override
+				public void mouseReleased(MouseEvent e) {
+					if (e.isPopupTrigger()) {
+						showPopup(e);
+					}
+				}
+			});
+
+		}
 	}
 	private static JPopupMenu createPopup(final ImageViewer imageViewer) {
 		/** Status bar toggle **/
@@ -374,13 +384,6 @@ public final class ImageViewer {
 		popup.add(togglePixelatedZoomItem);
 		popup.add(saveImageMenuItem);
 		return popup;
-	}
-	/**
-	 * Sets the popup menu for the viewer. This function can be called with a {@code null} argument to disable the popup.
-	 * @param popup the popup menu to show for the viewer; can be {@code null} to disable the popup menu
-	 */
-	public void setPopupMenu(JPopupMenu popup) {
-		this.popup=popup;
 	}
 	/**
 	 * Sets the status bar component for this image viewer. The new status bar is made
