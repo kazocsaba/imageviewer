@@ -2,39 +2,21 @@ package hu.kazocsaba.imageviewer;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.Insets;
 import java.awt.LayoutManager;
 import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.File;
-import java.io.IOException;
-import javax.imageio.ImageIO;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JViewport;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  * A general purpose image viewer component. It contains a scroll pane and manages the size of the image in accordance
@@ -63,13 +45,6 @@ public final class ImageViewer {
 	private boolean statusBarVisible=false;
 	private PropertyChangeSupport propertyChangeSupport;
 	private Synchronizer synchronizer;
-	/*
-	 * This will only be accessed from the event dispatch thread so using a static instance to share
-	 * the current directory across components is fine.
-	 */
-	private static JFileChooser saveChooser;
-	private static JButton saveChooserHelpButton;
-	private static JLabel saveChooserHelpLabel;
 
 	/**
 	 * Creates a new image viewer. Initially it will be empty, and it will have a default popup menu.
@@ -129,10 +104,11 @@ public final class ImageViewer {
 		setStatusBar(new DefaultStatusBar());
 		
 		if (defaultPopupMenu) {
-			final JPopupMenu popup=createPopup(this);
 			theImage.addMouseListener(new MouseAdapter() {
+				JPopupMenu popup;
 				private void showPopup(MouseEvent e) {
 					e.consume();
+					if (popup==null) popup=new DefaultViewerPopup(ImageViewer.this);
 					Point p = panel.getPopupLocation(e);
 					if (p == null) {
 						p = e.getPoint();
@@ -154,236 +130,6 @@ public final class ImageViewer {
 			});
 
 		}
-	}
-	private static JPopupMenu createPopup(final ImageViewer imageViewer) {
-		/** Status bar toggle **/
-		
-		final JCheckBoxMenuItem toggleStatusBarItem = new JCheckBoxMenuItem("Status bar");
-		toggleStatusBarItem.setState(imageViewer.isStatusBarVisible());
-		imageViewer.addPropertyChangeListener("statusBarVisible", new PropertyChangeListener() {
-
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				toggleStatusBarItem.setState(imageViewer.isStatusBarVisible());
-			}
-		});
-		toggleStatusBarItem.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				imageViewer.setStatusBarVisible(!imageViewer.isStatusBarVisible());
-			}
-		});
-		
-		/** Zoom menu **/
-		
-		JMenu zoomMenu = new JMenu("Zoom");
-		final JRadioButtonMenuItem zoomOriginalSize = new JRadioButtonMenuItem("Original size", imageViewer.getResizeStrategy()==ResizeStrategy.NO_RESIZE);
-		zoomOriginalSize.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				imageViewer.setResizeStrategy(ResizeStrategy.NO_RESIZE);
-			}
-		});
-		final JRadioButtonMenuItem zoomShrinkToFit = new JRadioButtonMenuItem("Shrink to fit", imageViewer.getResizeStrategy()==ResizeStrategy.SHRINK_TO_FIT);
-		zoomShrinkToFit.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				imageViewer.setResizeStrategy(ResizeStrategy.SHRINK_TO_FIT);
-			}
-		});
-		final JRadioButtonMenuItem zoomResizeToFit = new JRadioButtonMenuItem("Resize to fit", imageViewer.getResizeStrategy()==ResizeStrategy.RESIZE_TO_FIT);
-		zoomResizeToFit.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				imageViewer.setResizeStrategy(ResizeStrategy.RESIZE_TO_FIT);
-			}
-		});
-		
-		class CustomZoomEntry {
-			String label;
-			double value;
-			JRadioButtonMenuItem menuItem;
-
-			private CustomZoomEntry(String label, double value) {
-				this.label = label;
-				this.value = value;
-				menuItem=new JRadioButtonMenuItem(label, imageViewer.getResizeStrategy()==ResizeStrategy.CUSTOM_ZOOM && imageViewer.getZoomFactor()==value);
-				menuItem.addActionListener(new ActionListener() {
-
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						imageViewer.setResizeStrategy(ResizeStrategy.CUSTOM_ZOOM);
-						imageViewer.setZoomFactor(CustomZoomEntry.this.value);
-					}
-				});
-			}
-			
-		}
-		final CustomZoomEntry[] customZoomEntries={
-			new CustomZoomEntry("25%", .25),
-			new CustomZoomEntry("50%", .50),
-			new CustomZoomEntry("75%", .75),
-			new CustomZoomEntry("100%", 1),
-			new CustomZoomEntry("150%", 1.5),
-			new CustomZoomEntry("200%", 2),
-			new CustomZoomEntry("300%", 3),
-			new CustomZoomEntry("500%", 5),
-			new CustomZoomEntry("1000%", 10),
-			new CustomZoomEntry("2000%", 20),
-			new CustomZoomEntry("5000%", 50)
-		};
-		final ButtonGroup group = new ButtonGroup();
-		group.add(zoomOriginalSize);
-		group.add(zoomShrinkToFit);
-		group.add(zoomResizeToFit);
-		
-		zoomMenu.add(zoomOriginalSize);
-		zoomMenu.add(zoomShrinkToFit);
-		zoomMenu.add(zoomResizeToFit);
-		zoomMenu.add(new JSeparator());
-		for (CustomZoomEntry cze: customZoomEntries) {
-			zoomMenu.add(cze.menuItem);
-			group.add(cze.menuItem);
-		}
-		
-		imageViewer.addPropertyChangeListener("resizeStrategy", new PropertyChangeListener() {
-
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				switch ((ResizeStrategy)evt.getNewValue()) {
-					case NO_RESIZE:
-						zoomOriginalSize.setSelected(true);
-						break;
-					case RESIZE_TO_FIT:
-						zoomResizeToFit.setSelected(true);
-						break;
-					case SHRINK_TO_FIT:
-						zoomShrinkToFit.setSelected(true);
-						break;
-					case CUSTOM_ZOOM:
-						group.clearSelection();
-						for (CustomZoomEntry cze: customZoomEntries) {
-							if (cze.value==imageViewer.getZoomFactor()) {
-								cze.menuItem.setSelected(true);
-								break;
-							}
-						}
-						break;
-					default:
-						throw new AssertionError("Unknown resize strategy: "+evt.getNewValue());
-				}
-			}
-		});
-		imageViewer.addPropertyChangeListener("zoomFactor", new PropertyChangeListener() {
-
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				if (imageViewer.getResizeStrategy()==ResizeStrategy.CUSTOM_ZOOM) {
-					group.clearSelection();
-					for (CustomZoomEntry cze: customZoomEntries) {
-						if (cze.value==imageViewer.getZoomFactor()) {
-							cze.menuItem.setSelected(true);
-							break;
-						}
-					}
-				}
-			}
-		});
-		
-		/** Save command **/
-		
-		JMenuItem saveImageMenuItem=new JMenuItem("Save image...");
-		saveImageMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (saveChooser==null) {
-					saveChooser=new JFileChooser();
-					saveChooserHelpLabel=new JLabel();
-					saveChooserHelpLabel.setText("<html>If the file name ends<br>with '.png' or '.jpg',<br>then the appropriate<br>format is used.<br>Otherwise '.png' is<br>appended to the name.");
-					saveChooserHelpLabel.setFont(saveChooserHelpLabel.getFont().deriveFont(10f));
-					saveChooserHelpButton=new JButton("?");
-					saveChooserHelpButton.setMargin(new Insets(0, 2, 0, 2));
-					saveChooserHelpButton.addActionListener(new ActionListener() {
-
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							saveChooser.getAccessory().removeAll();
-							saveChooser.getAccessory().add(saveChooserHelpLabel);
-							saveChooser.revalidate();
-							saveChooser.repaint();
-						}
-					});
-					saveChooserHelpLabel.addMouseListener(new MouseAdapter() {
-
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							saveChooser.getAccessory().removeAll();
-							saveChooser.getAccessory().add(saveChooserHelpButton);
-							saveChooser.revalidate();
-							saveChooser.repaint();
-						}
-						
-					});
-					saveChooser.setAccessory(new JPanel());
-					saveChooser.setDialogTitle("Save image...");
-					
-					saveChooser.setFileFilter(new FileNameExtensionFilter("JPG and PNG images", "jpg", "png"));
-				}
-				// reset to show the help button with every new dialog
-				saveChooser.getAccessory().removeAll();
-				saveChooser.getAccessory().add(saveChooserHelpButton);
-				if (JFileChooser.APPROVE_OPTION==saveChooser.showSaveDialog(imageViewer.getComponent())) {
-					File f=saveChooser.getSelectedFile();
-					BufferedImage image=imageViewer.getImage();
-					if (image==null) {
-						JOptionPane.showMessageDialog(imageViewer.getComponent(), "No image", "Error", JOptionPane.ERROR_MESSAGE);
-					} else {
-						String name=f.getName().toLowerCase();
-						try {
-							if (name.endsWith(".jpg")) {
-								ImageIO.write(image, "jpg", f);
-							} else if (name.endsWith(".png")) {
-								ImageIO.write(image, "png", f);
-							} else {
-								f=new File(f.getPath()+".png");
-								ImageIO.write(image, "png", f);
-							}
-						} catch (IOException ex) {
-							JOptionPane.showMessageDialog(imageViewer.getComponent(), "<html>Cannot write image to "+f.getAbsolutePath()+":<br>"+ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-						}
-					}
-				}
-			}
-		});
-		
-		/** Pixelated zoom toggle **/
-		final JCheckBoxMenuItem togglePixelatedZoomItem = new JCheckBoxMenuItem("Pixelated zoom");
-		togglePixelatedZoomItem.setState(imageViewer.isPixelatedZoom());
-		imageViewer.addPropertyChangeListener("pixelatedZoom", new PropertyChangeListener() {
-
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				togglePixelatedZoomItem.setState(imageViewer.isPixelatedZoom());
-			}
-		});
-		togglePixelatedZoomItem.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				imageViewer.setPixelatedZoom(!imageViewer.isPixelatedZoom());
-			}
-		});
-		
-		JPopupMenu popup = new JPopupMenu();
-		popup.add(toggleStatusBarItem);
-		popup.add(zoomMenu);
-		popup.add(togglePixelatedZoomItem);
-		popup.add(saveImageMenuItem);
-		return popup;
 	}
 	/**
 	 * Sets the status bar component for this image viewer. The new status bar is made
