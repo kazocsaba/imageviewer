@@ -1,12 +1,12 @@
 Changelog
 =========
 
-Version 1.2.2 (???):
+Version 1.2.2 (2012.06.04):
 
 - Made image mouse position reporting more robust when the change is
 due to something other than mouse movement (synthetic mouse movement events).
 - Viewer synchronization is now usable when the images have different sizes.
-- Added ImageViewerUtil.synchronizedViewer(Collection<ImageViewer>).
+- Added `ImageViewerUtil.synchronizedViewer(Collection<ImageViewer>)`.
 - Added option to disable default popup menu.
 - Exposed the default popup menu as class `DefaultViewerPopup`.
 
