@@ -1,6 +1,8 @@
 Changelog
 =========
 
+Version 1.2.3 (2012.07.30): Fixed exception when the viewer appeared under the mouse cursor.
+
 Version 1.2.2 (2012.06.04):
 
 - Made image mouse position reporting more robust when the change is

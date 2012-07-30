@@ -83,7 +83,12 @@ class ImageComponent extends JComponent {
 
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				mouseEventTranslator.correctionalFire();
+				/*
+				 * Here the viewer might not have a size yet, because we might be before the first layout.
+				 * But that's alright. As soon as we get our size, the viewport will send another state change.
+				 */
+				if (hasSize())
+					mouseEventTranslator.correctionalFire();
 			}
 		});
 	}
